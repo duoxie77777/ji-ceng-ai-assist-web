@@ -1,9 +1,9 @@
 <template>
-    <div>
-        home
-        <SvgIcon name="React"/>
-        <button @click="handleLogin()">登录</button>
-    </div>
+  <div style="background-color: #165DFF;">
+    home
+    <SvgIcon name="React" />
+    <button @click="handleLogin()">登录</button>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -18,15 +18,15 @@ const handleLogin = async () => {
       username: username.value,
       password: password.value,
     })
-    
+
     // 保存 token
     localStorage.setItem('token', result.token)
     console.log('登录成功', result)
-    
+
     // 获取用户信息
     const userInfo = await userApi.getInfo()
     console.log('用户信息', userInfo)
-    
+
   } catch (error) {
     console.error('登录失败', error)
   }
