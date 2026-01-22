@@ -8,7 +8,7 @@ import './assets/iconfont/iconfont.css'
 import './assets/iconfont/iconfont.js'
 
 // 引入 SvgIcon 组件
-import SvgIcon from './components/svgIcon.vue'
+import SvgIcon from './components/SvgIcon/SvgIcon.vue'
 
 const app = createApp(App)
 
