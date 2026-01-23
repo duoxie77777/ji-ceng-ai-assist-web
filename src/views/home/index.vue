@@ -1,36 +1,49 @@
 <template>
-  <div style="background-color: #165DFF;">
-    home
-    <SvgIcon name="React" />
-    <button @click="handleLogin()">登录</button>
+  <div class="home-page">
+    我是home
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { userApi } from '@/api/user/user'
-const username = ref('admin')
-const password = ref('123456')
+import { resetPermissionGuard } from '@/router/guards/permission'
 
-const handleLogin = async () => {
+const router = useRouter()
+const userInfo = ref<any>(null)
+
+// 获取用户信息
+onMounted(async () => {
   try {
-    const result = await userApi.login({
-      username: username.value,
-      password: password.value,
-    })
-
-    // 保存 token
-    localStorage.setItem('token', result.token)
-    console.log('登录成功', result)
-
-    // 获取用户信息
-    const userInfo = await userApi.getInfo()
-    console.log('用户信息', userInfo)
-
+    userInfo.value = await userApi.getInfo()
   } catch (error) {
-    console.error('登录失败', error)
+    console.error('获取用户信息失败:', error)
+  }
+})
+
+// 退出登录
+const handleLogout = async () => {
+  try {
+    await userApi.logout()
+  } catch (error) {
+    console.error('退出登录失败:', error)
+  } finally {
+    // 清除本地数据
+    localStorage.removeItem('token')
+    resetPermissionGuard()
+    // 跳转到登录页
+    router.push('/login')
   }
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.home-page {
+  padding: var(--spacing-xl);
+  max-width: 100%;
+  height: 100%;
+  background: var(--bg-page);
+}
+
+</style>

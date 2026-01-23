@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 //  iconfont 项目 Symbol 在线链接
-const ICONFONT_URL = '//at.alicdn.com/t/c/font_5115244_mmmoz3shj5b.js'
+const ICONFONT_URL = '//at.alicdn.com/t/c/font_5115244_f4arwqis8s.js'
 
 const outputPath = path.resolve(__dirname, '../src/assets/iconfont/iconfont.js')
 

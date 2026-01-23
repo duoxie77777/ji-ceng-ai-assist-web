@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { App } from 'vue'
 import routes from './routes/index.ts'
+import { setupPermissionGuard } from './guards/permission'
 
 // 创建路由
 const router = createRouter({
@@ -16,10 +17,8 @@ const router = createRouter({
     }
 })
 
-// 路由守卫
-router.beforeEach((to, from, next) => {
-    next()
-})
+// 设置路由守卫
+setupPermissionGuard(router)
 
 // 路由错误处理
 router.onError((error) => {

@@ -47,9 +47,9 @@ const iconStyle = computed(() => {
     style.height = size
   }
   
-  // 处理颜色
+  // 处理颜色 - 使用 fill 而不是 color
   if (props.color) {
-    style.color = props.color
+    style.fill = props.color
   }
   
   return style
