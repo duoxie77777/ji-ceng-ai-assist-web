@@ -5,25 +5,17 @@
       <!-- Logo 区域 -->
       <div class="logo-section">
         <div class="logo">
-          <span v-if="!isCollapsed" class="logo-text">基层AI</span>
+          <span v-if="!isCollapsed" class="logo-text">AI助手</span>
           <span v-else class="logo-icon">AI</span>
         </div>
       </div>
 
       <!-- 菜单列表 -->
       <nav class="nav-menu">
-        <div
-          v-for="menu in menuList"
-          :key="menu.path"
-          :class="['menu-item', { active: isMenuActive(menu.path) }]"
-          @click="navigateTo(menu.path)"
-        >
+        <div v-for="menu in menuList" :key="menu.path" :class="['menu-item', { active: isMenuActive(menu.path) }]"
+          @click="navigateTo(menu.path)">
           <span class="menu-icon">
-            <SvgIcon 
-              v-if="menu.meta.icon" 
-              :name="menu.meta.icon" 
-              :color="isMenuActive(menu.path) ? '#ffffff' : ''"
-            />
+            <SvgIcon v-if="menu.meta.icon" :name="menu.meta.icon" :color="isMenuActive(menu.path) ? '#ffffff' : ''" />
           </span>
           <span v-if="!isCollapsed" class="menu-title">{{ menu.meta.title }}</span>
         </div>
@@ -46,18 +38,14 @@
         </div>
         <div class="header-right">
           <!-- 搜索框 -->
-          <el-input
-            class="search-box"
-            placeholder="搜索..."
-            clearable
-          >
+          <el-input class="search-box" placeholder="搜索..." clearable>
             <template #prefix>
               <el-icon class="search-icon">
                 <Search />
               </el-icon>
             </template>
           </el-input>
-          
+
           <!-- 用户信息 -->
           <div class="user-section" @click="toggleUserMenu">
             <div class="user-avatar">{{ userInitial }}</div>
@@ -84,15 +72,18 @@
       </header>
 
       <!-- 内容区域 -->
-      <main class="content">
-        <router-view />
-      </main>
+      <el-watermark :font="watermarkFont" :content="watermarkContent">
+        <main class="content">
+          <router-view />
+        </main>
+      </el-watermark>
+
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue'
@@ -100,6 +91,9 @@ import { userApi } from '@/api/user/user'
 import { menuApi } from '@/api/menu/menu'
 import { resetPermissionGuard } from '@/router/guards/permission'
 import type { MenuItemMock } from '../../mock/menu'
+import { ElMessageBoxPro } from '@/components/custom/ElMessageBoxPro'
+import { getFormattedCurrentTime } from "@/utils/time/timeUtils"
+import { useUserStore } from '@/store/user'
 const router = useRouter()
 const route = useRoute()
 
@@ -108,6 +102,14 @@ const isCollapsed = ref(false)
 const showUserMenu = ref(false)
 const userInfo = ref<any>(null)
 const menuList = ref<MenuItemMock[]>([])
+
+
+// 水印内容(用户姓名+时间)
+const watermarkContent = ref(['admin', getFormattedCurrentTime()])
+const watermarkFont = reactive({
+  color: 'rgba(0, 0, 0, .15)',
+  fontSize: 14,
+})
 
 // 计算属性
 const userInitial = computed(() => {
@@ -138,13 +140,18 @@ const navigateTo = (path: string) => {
 
 const handleLogout = async () => {
   try {
+    await ElMessageBoxPro.confirm({
+      message: '确定要退出登录吗？'
+    })
     await userApi.logout()
-  } catch (error) {
-    console.error('退出登录失败:', error)
-  } finally {
     localStorage.removeItem('token')
     resetPermissionGuard()
     router.push('/login')
+  } catch (error: any) {
+    if (error === 'cancel' || error?.message?.includes('cancel')) {
+      return
+    }
+    console.error('退出登录失败:', error)
   }
 }
 
@@ -153,7 +160,7 @@ onMounted(async () => {
   try {
     // 加载用户信息
     userInfo.value = await userApi.getInfo()
-    
+
     // 加载菜单数据
     const menus = await menuApi.getMenuList()
     menuList.value = menus
@@ -174,6 +181,7 @@ watch(showUserMenu, (newVal) => {
     }, 0)
   }
 })
+
 </script>
 
 <style scoped lang="less">
@@ -194,6 +202,7 @@ watch(showUserMenu, (newVal) => {
   transition: var(--transition-normal);
   position: relative;
   z-index: 100;
+  user-select: none;
 
   &.collapsed {
     width: var(--sidebar-collapsed-width);
@@ -214,6 +223,7 @@ watch(showUserMenu, (newVal) => {
   color: var(--text-sidebar);
   font-weight: 600;
   font-size: 18px;
+  cursor: pointer;
 
   .logo-text {
     display: flex;
@@ -272,7 +282,7 @@ watch(showUserMenu, (newVal) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     svg {
       fill: currentColor;
     }
@@ -526,7 +536,7 @@ watch(showUserMenu, (newVal) => {
   flex: 1;
   overflow-y: auto;
   background: var(--bg-page);
-
+  height: calc(100vh - var(--header-height));
   &::-webkit-scrollbar {
     width: 8px;
   }

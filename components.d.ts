@@ -11,10 +11,16 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ConfirmBox: typeof import('./src/components/custom/ConfirmBox.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElInputPro: typeof import('./src/components/custom/ElInputPro/ElInputPro.vue')['default']
+    ElMessageBoxPro: typeof import('./src/components/custom/ElMessageBoxPro/ElMessageBoxPro.vue')['default']
+    ElMessageBoxProView: typeof import('./src/components/custom/ElMessageBoxPro/ElMessageBoxProView.vue')['default']
+    ElWatermark: typeof import('element-plus/es')['ElWatermark']
     Example: typeof import('./src/components/scaleScreen/example.vue')['default']
+    MessageDialog: typeof import('./src/components/custom/ElMessageBoxPro/MessageDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScaleScreen: typeof import('./src/components/scaleScreen/scaleScreen.vue')['default']
