@@ -14,8 +14,11 @@ declare module 'vue' {
     ElButton: typeof import('element-plus/es')['ElButton']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    Example: typeof import('./src/components/scaleScreen/example.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScaleScreen: typeof import('./src/components/scaleScreen/scaleScreen.vue')['default']
+    ScreenAdapter: typeof import('./src/components/ScreenAdapter/index.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon/SvgIcon.vue')['default']
   }
 }

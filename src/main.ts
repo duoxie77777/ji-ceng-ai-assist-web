@@ -12,6 +12,10 @@ import './assets/iconfont/iconfont.js'
 // 引入 SvgIcon 组件
 import SvgIcon from './components/SvgIcon/SvgIcon.vue'
 
+// 引入rem适配
+import { initRem } from '@/utils/rem/flexible.ts'
+initRem()
+
 const app = createApp(App)
 
 // 全局注册 SvgIcon 组件
