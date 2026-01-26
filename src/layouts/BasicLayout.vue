@@ -22,7 +22,6 @@
             <SvgIcon 
               v-if="menu.meta.icon" 
               :name="menu.meta.icon" 
-              :size="18"
               :color="isMenuActive(menu.path) ? '#ffffff' : ''"
             />
           </span>

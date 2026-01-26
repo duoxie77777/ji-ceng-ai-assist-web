@@ -21,10 +21,10 @@ const props = defineProps({
     type: String,
     required: true
   },
-  // 图标大小，可以是数字（单位px）或字符串（如 '2em'）
+  // 图标大小，可以是数字（单位px）或字符串（如 '2em', '1rem'）
   size: {
     type: [Number, String],
-    default: 16
+    default: '1rem' // 使用 rem 单位以支持响应式适配
   },
   // 图标颜色
   color: {
@@ -58,10 +58,10 @@ const iconStyle = computed(() => {
 
 <style scoped>
 .svg-icon {
-  width: 1em;
-  height: 1em;
   vertical-align: -0.15em;
   fill: currentColor;
   overflow: hidden;
+  /* width 和 height 通过 style 属性动态设置 */
 }
+
 </style>
