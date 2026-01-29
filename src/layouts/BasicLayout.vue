@@ -5,8 +5,12 @@
       <!-- Logo 区域 -->
       <div class="logo-section">
         <div class="logo">
-          <span v-if="!isCollapsed" class="logo-text">AI助手</span>
-          <span v-else class="logo-icon">AI</span>
+          <span v-if="!isCollapsed" class="logo-text">
+            <img src="@/assets/logoText.png" alt="">
+          </span>
+          <span v-else class="logo-icon">
+            <img src="@/assets/logo.png" alt="">
+          </span>
         </div>
       </div>
 
@@ -213,7 +217,8 @@ watch(showUserMenu, (newVal) => {
   height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 0 var(--spacing-lg);
+  justify-content: center;
+  // padding: 0 var(--spacing-lg);
   border-bottom: 1px solid var(--border-sidebar);
 }
 
@@ -228,11 +233,17 @@ watch(showUserMenu, (newVal) => {
   .logo-text {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 
   .logo-icon {
     font-size: 20px;
     font-weight: bold;
+  }
+
+  img {
+    width: 100%;
+    height: var(--header-height);
   }
 }
 
@@ -537,6 +548,7 @@ watch(showUserMenu, (newVal) => {
   overflow-y: auto;
   background: var(--bg-page);
   height: calc(100vh - var(--header-height));
+
   &::-webkit-scrollbar {
     width: 8px;
   }

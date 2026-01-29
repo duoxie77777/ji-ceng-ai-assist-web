@@ -65,10 +65,8 @@
 /* 内容 */
 .el-message-box__content {
   padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-md);
-  font-size: 14px;
   color: var(--text-secondary);
-  text-align: center;
-  line-height: 1.5;
+  border-radius: var(--radius-xxl);
 }
 
 .el-message-box__message p {
@@ -103,7 +101,7 @@
 .el-message-box__btns {
   padding: var(--spacing-lg) var(--spacing-xl) var(--spacing-xl);
   display: flex;
-  justify-content: center;
+  justify-content: center !important;
   gap: var(--spacing-lg);
 }
 
