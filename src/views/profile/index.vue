@@ -9,9 +9,9 @@
 
 <style scoped lang="less">
 .document-page {
-  padding: var(--spacing-xl);
+  padding: 24px;
   max-width: 100%;
   height: 100%;
-  background: var(--bg-page);
+  background: var(--gray-50);
 }
 </style>

@@ -50,6 +50,11 @@
             </template>
           </el-input>
 
+          <!-- 主题切换 -->
+          <div class="theme-toggle" @click="themeStore.toggleTheme">
+            <span class="theme-icon">{{ themeStore.isDark ? '🌙' : '☀️' }}</span>
+          </div>
+
           <!-- 用户信息 -->
           <div class="user-section" @click="toggleUserMenu">
             <div class="user-avatar">{{ userInitial }}</div>
@@ -76,11 +81,11 @@
       </header>
 
       <!-- 内容区域 -->
-      <el-watermark :font="watermarkFont" :content="watermarkContent">
+      <!-- <el-watermark :font="watermarkFont" :content="watermarkContent"> -->
         <main class="content">
           <router-view />
         </main>
-      </el-watermark>
+      <!-- </el-watermark> -->
 
     </div>
   </div>
@@ -97,9 +102,10 @@ import { resetPermissionGuard } from '@/router/guards/permission'
 import type { MenuItemMock } from '../../mock/menu'
 import { ElMessageBoxPro } from '@/components/custom/ElMessageBoxPro'
 import { getFormattedCurrentTime } from "@/utils/time/timeUtils"
-import { useUserStore } from '@/store/user'
+import { useUserStore, useThemeStore } from '@/store'
 const router = useRouter()
 const route = useRoute()
+const themeStore = useThemeStore()
 
 // 状态
 const isCollapsed = ref(false)
@@ -192,40 +198,40 @@ watch(showUserMenu, (newVal) => {
 .feishu-layout {
   display: flex;
   height: 100vh;
-  background: var(--bg-page);
+  background: var(--gray-50);
   overflow: hidden;
-  transition: var(--transition-fast);
+  transition: all 0.2s;
 }
 
 // 侧边栏样式
 .sidebar {
-  width: var(--sidebar-width);
-  background: var(--bg-sidebar);
+  width: 240px;
+  background: var(--white);
   display: flex;
   flex-direction: column;
-  transition: var(--transition-normal);
+  transition: all 0.3s ease;
   position: relative;
   z-index: 100;
   user-select: none;
 
   &.collapsed {
-    width: var(--sidebar-collapsed-width);
+    width: 64px;
   }
 }
 
 .logo-section {
-  height: var(--header-height);
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  // padding: 0 var(--spacing-lg);
-  border-bottom: 1px solid var(--border-sidebar);
+  // padding: 0 16px;
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  color: var(--text-sidebar);
+  color: var(--gray-900);
   font-weight: 600;
   font-size: 18px;
   cursor: pointer;
@@ -243,22 +249,23 @@ watch(showUserMenu, (newVal) => {
 
   img {
     width: 100%;
-    height: var(--header-height);
+    height: 56px;
   }
 }
 
 .nav-menu {
   flex: 1;
-  padding: var(--spacing-sm) 0;
+  padding: 8px 0;
   overflow-y: auto;
   overflow-x: hidden;
+  border-right: 1px solid var(--gray-200);
 
   &::-webkit-scrollbar {
     width: 4px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
+    background: var(--gray-400);
     border-radius: 2px;
   }
 }
@@ -267,27 +274,27 @@ watch(showUserMenu, (newVal) => {
   display: flex;
   align-items: center;
   height: 40px;
-  padding: 0 var(--spacing-lg);
-  margin: 2px var(--spacing-sm);
-  border-radius: var(--radius-md);
-  color: var(--text-sidebar-secondary);
+  padding: 0 16px;
+  margin: 2px 8px;
+  border-radius: 6px;
+  color: var(--gray-600);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: all 0.2s;
   white-space: nowrap;
 
   &:hover {
-    background: var(--bg-sidebar-hover);
-    color: var(--text-sidebar-hover);
+    background: var(--gray-100);
+    color: var(--blue-500);
   }
 
   &.active {
-    background: var(--color-primary);
-    color: var(--text-white);
+    background: var(--blue-500);
+    color: var(--white);
   }
 
   .menu-icon {
     font-size: 18px;
-    margin-right: var(--spacing-md);
+    margin-right: 12px;
     min-width: 18px;
     text-align: center;
     display: flex;
@@ -319,14 +326,15 @@ watch(showUserMenu, (newVal) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 1px solid var(--border-sidebar);
+  border-top: 1px solid var(--gray-200);
   cursor: pointer;
-  color: var(--text-sidebar-secondary);
-  transition: var(--transition-fast);
+  color: var(--gray-600);
+  transition: all 0.2s;
+  border-right: 1px solid var(--gray-200);
 
   &:hover {
-    background: var(--bg-sidebar-hover);
-    color: var(--text-sidebar-hover);
+    background: var(--gray-100);
+    color: var(--blue-500);
   }
 
   .collapse-icon {
@@ -344,15 +352,15 @@ watch(showUserMenu, (newVal) => {
 
 // 顶部导航栏
 .header {
-  height: var(--header-height);
-  background: var(--bg-card);
+  height: 56px;
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-xl);
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 24px;
+  border-bottom: 1px solid var(--gray-200);
   box-shadow: var(--shadow-sm);
-  transition: var(--transition-fast);
+  transition: all 0.2s;
 }
 
 .header-left {
@@ -367,7 +375,7 @@ watch(showUserMenu, (newVal) => {
   .breadcrumb-item {
     font-size: 16px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--gray-900);
   }
 }
 
@@ -375,62 +383,81 @@ watch(showUserMenu, (newVal) => {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: 16px;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--gray-100);
+  }
+
+  .theme-icon {
+    font-size: 18px;
+  }
 }
 
 .search-box {
   width: 200px;
 
   :deep(.el-input__wrapper) {
-    background: var(--bg-hover);
+    background: var(--gray-100);
     box-shadow: none;
-    border-radius: var(--radius-lg);
+    border-radius: 8px;
     padding: 4px 12px;
-    transition: var(--transition-fast);
+    transition: all 0.2s;
     height: 32px;
 
     &:hover {
-      background: var(--bg-hover);
+      background: var(--gray-100);
     }
 
     &.is-focus {
-      background: var(--bg-card);
-      box-shadow: var(--shadow-search-focus);
+      background: var(--white);
+      box-shadow: var(--shadow-focus);
     }
   }
 
   :deep(.el-input__inner) {
-    color: var(--text-primary);
+    color: var(--gray-900);
     font-size: 14px;
     height: 100%;
     line-height: 1;
 
     &::placeholder {
-      color: var(--text-placeholder);
+      color: var(--gray-400);
     }
   }
 
   :deep(.el-input__prefix) {
-    color: var(--text-tertiary);
+    color: var(--gray-500);
     font-size: 14px;
   }
 
   :deep(.el-input__suffix) {
-    color: var(--text-tertiary);
+    color: var(--gray-500);
   }
 }
 
 .user-section {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: 6px var(--spacing-md);
-  border-radius: var(--radius-lg);
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: all 0.2s;
 
   &:hover {
-    background: var(--bg-hover);
+    background: var(--gray-100);
   }
 }
 
@@ -438,24 +465,24 @@ watch(showUserMenu, (newVal) => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--gradient-avatar);
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--purple-500) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-white);
+  color: var(--white);
   font-size: 14px;
   font-weight: 500;
 }
 
 .user-name {
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--gray-900);
   font-weight: 500;
 }
 
 .dropdown-icon {
   font-size: 10px;
-  color: var(--text-tertiary);
+  color: var(--gray-500);
   transition: transform 0.2s;
 }
 
@@ -463,29 +490,29 @@ watch(showUserMenu, (newVal) => {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: var(--spacing-sm);
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-user-menu);
+  margin-top: 8px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
   min-width: 280px;
-  padding: var(--spacing-sm);
+  padding: 8px;
   z-index: 1000;
 
   .user-info-header {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: 12px;
+    padding: 12px;
 
     .user-avatar-large {
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: var(--gradient-avatar);
+      background: linear-gradient(135deg, var(--blue-500) 0%, var(--purple-500) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-white);
+      color: var(--white);
       font-size: 18px;
       font-weight: 600;
       flex-shrink: 0;
@@ -498,8 +525,8 @@ watch(showUserMenu, (newVal) => {
       .username {
         font-size: 15px;
         font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: var(--spacing-xs);
+        color: var(--gray-900);
+        margin-bottom: 4px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -507,7 +534,7 @@ watch(showUserMenu, (newVal) => {
 
       .user-email {
         font-size: 12px;
-        color: var(--text-tertiary);
+        color: var(--gray-500);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -517,22 +544,22 @@ watch(showUserMenu, (newVal) => {
 
   .menu-divider {
     height: 1px;
-    background: var(--border-color);
-    margin: var(--spacing-sm) 0;
+    background: var(--gray-200);
+    margin: 8px 0;
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    padding: 10px var(--spacing-md);
-    border-radius: var(--radius-lg);
+    padding: 10px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: var(--transition-fast);
-    color: var(--text-primary);
+    transition: all 0.2s;
+    color: var(--gray-900);
     font-size: 14px;
 
     &:hover {
-      background: var(--bg-hover);
+      background: var(--gray-100);
     }
 
     .menu-icon {
@@ -546,8 +573,8 @@ watch(showUserMenu, (newVal) => {
 .content {
   flex: 1;
   overflow-y: auto;
-  background: var(--bg-page);
-  height: calc(100vh - var(--header-height));
+  background: var(--gray-50);
+  height: calc(100vh - 56px);
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -558,11 +585,11 @@ watch(showUserMenu, (newVal) => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: var(--radius-sm);
+    background: var(--gray-400);
+    border-radius: 4px;
 
     &:hover {
-      background: var(--scrollbar-thumb-hover);
+      background: var(--gray-500);
     }
   }
 }

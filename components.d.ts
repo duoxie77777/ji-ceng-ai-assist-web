@@ -26,5 +26,6 @@ declare module 'vue' {
     ScaleScreen: typeof import('./src/components/scaleScreen/scaleScreen.vue')['default']
     ScreenAdapter: typeof import('./src/components/ScreenAdapter/index.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon/SvgIcon.vue')['default']
+    ThemeToggle: typeof import('./src/components/ThemeToggle/ThemeToggle.vue')['default']
   }
 }

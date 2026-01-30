@@ -1,97 +1,111 @@
-// ==================== CSS 变量定义 ====================
-// 统一管理项目中的所有颜色、尺寸等样式变量
+// 纯颜色变量，无语义
 
 :root {
-  // ========== 主色系 ==========
-  --color-primary: #3370ff;
-  --color-primary-hover: #4e83fd;
-  --color-primary-active: #4080ff;
-  --color-primary-light: rgba(51, 112, 255, 0.1);
-  --color-primary-shadow: rgba(51, 112, 255, 0.3);
-  --color-secondary: #5e4caf;
+  // 蓝色系
+  --blue-50: #f2f3ff;
+  --blue-100: #e0e6ff;
+  --blue-200: #b8c1ff;
+  --blue-300: #8091ff;
+  --blue-400: #5e7aff;
+  --blue-500: #3370ff;
+  --blue-600: #2b5cc9;
+  --blue-700: #2353b5;
+  --blue-800: #1a4294;
+  --blue-900: #163072;
 
-  // ========== 背景色 ==========
-  --bg-page: #f7f8fa;
-  --bg-card: #ffffff;
-  --bg-sidebar: #ffffff;
-  --bg-hover: #f2f3f5;
-  --bg-active: rgba(255, 255, 255, 0.08);
-  --bg-sidebar-hover: #f2f3f5;
-  --bg-sidebar-active: rgba(51, 112, 255, 0.1);
+  // 紫色系
+  --purple-500: #5e4caf;
+  --purple-600: #4e3d91;
+  --purple-700: #3f3173;
 
-  // ========== 文字颜色 ==========
-  --text-primary: #1f2329;
-  --text-secondary: #646a73;
-  --text-tertiary: #8f959e;
-  --text-placeholder: #c9cdd4;
-  --text-white: #ffffff;
-  --text-white-secondary: rgba(255, 255, 255, 0.65);
-  --text-white-hover: rgba(255, 255, 255, 0.9);
-  
-  // 侧边栏文字颜色（白色背景用）
-  --text-sidebar: #1f2329;
-  --text-sidebar-secondary: #646a73;
-  --text-sidebar-hover: #3370ff;
+  // 绿色系
+  --green-50: #e8f8f5;
+  --green-500: #00b578;
+  --green-600: #009666;
 
-  // ========== 边框颜色 ==========
-  --border-color: #e5e6eb;
-  --border-light: #e5e6eb;
-  --border-sidebar: #e5e6eb;
+  // 红色系
+  --red-50: #ffece8;
+  --red-500: #f53f3f;
+  --red-600: #d14747;
+  --red-700: #b53f3f;
 
-  // ========== 阴影 ==========
+  // 灰色系
+  --gray-50: #f7f8fa;
+  --gray-100: #f2f3f5;
+  --gray-200: #e5e6eb;
+  --gray-300: #dcdfe6;
+  --gray-400: #c9cdd4;
+  --gray-500: #8f959e;
+  --gray-600: #646a73;
+  --gray-700: #4e545f;
+  --gray-800: #333333;
+  --gray-900: #1f2329;
+
+  // 黑色
+  --black: #000000;
+  --white: #ffffff;
+
+  // 阴影
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 12px rgba(31, 35, 41, 0.08);
   --shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.12);
-  --shadow-card-hover: 0 2px 12px rgba(31, 35, 41, 0.08);
-  --shadow-button-primary: 0 2px 8px rgba(51, 112, 255, 0.3);
-  --shadow-button-danger: 0 2px 8px rgba(245, 63, 63, 0.3);
-  --shadow-login-card: 0 24px 80px rgba(0, 0, 0, 0.15);
-  --shadow-user-menu: 0 6px 24px rgba(0, 0, 0, 0.12);
-  --shadow-search-focus: 0 0 0 2px rgba(51, 112, 255, 0.1);
-  --shadow-input-focus: 0 0 0 3px rgba(51, 112, 255, 0.1);
-  --shadow-button-hover: 0 6px 20px rgba(51, 112, 255, 0.3);
-
-  // ========== 状态颜色 ==========
-  --color-success: #00b578;
-  --color-success-bg: #e8f8f5;
-  --color-danger: #f53f3f;
-  --color-danger-hover: #f76560;
-
-  // ========== 滚动条 ==========
-  --scrollbar-thumb: #c1c4cd;
-  --scrollbar-thumb-hover: #a8abb7;
-  --scrollbar-thumb-light: rgba(255, 255, 255, 0.2);
-
-  // ========== 渐变 ==========
-  --gradient-avatar: linear-gradient(135deg, #3370ff 0%, #5e4caf 100%);
-  --gradient-login-bg: linear-gradient(135deg, #3370ff 0%, #5e4caf 100%);
-
-  // ========== 特殊背景 ==========
-  --bg-login-decoration: rgba(255, 255, 255, 0.1);
-
-  // ========== 尺寸 ==========
-  --header-height: 56px;
-  --sidebar-width: 240px;
-  --sidebar-collapsed-width: 64px;
-
-  // ========== 圆角 ==========
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-xxl: 16px;
-
-  // ========== 间距 ==========
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 12px;
-  --spacing-lg: 16px;
-  --spacing-xl: 24px;
-  --spacing-xxl: 40px;
-  --spacing-xxxl: 48px;
-
-  // ========== 过渡 ==========
-  --transition-fast: all 0.2s;
-  --transition-normal: all 0.3s ease;
+  --shadow-blue: 0 2px 8px rgba(51, 112, 255, 0.3);
+  --shadow-blue-lg: 0 6px 20px rgba(51, 112, 255, 0.3);
+  --shadow-login: 0 24px 80px rgba(0, 0, 0, 0.15);
+  --shadow-focus: 0 0 0 3px rgba(51, 112, 255, 0.1);
 }
 
+// 暗色主题
+.dark {
+  // 蓝色系（暗色下不变）
+  --blue-50: rgba(51, 112, 255, 0.05);
+  --blue-100: rgba(51, 112, 255, 0.1);
+  --blue-200: rgba(51, 112, 255, 0.2);
+  --blue-300: rgba(51, 112, 255, 0.3);
+  --blue-400: rgba(51, 112, 255, 0.4);
+  --blue-500: #4080ff;
+  --blue-600: #4e83fd;
+  --blue-700: #5e90ff;
+  --blue-800: #6ea0ff;
+  --blue-900: #7db0ff;
+
+  // 紫色系
+  --purple-500: #7a6dbf;
+  --purple-600: #8a7dd0;
+  --purple-700: #9a8ee1;
+
+  // 绿色系
+  --green-50: rgba(0, 181, 120, 0.1);
+  --green-500: #00c27a;
+  --green-600: #00d285;
+
+  // 红色系
+  --red-50: rgba(245, 63, 63, 0.1);
+  --red-500: #ff4d4f;
+  --red-600: #ff6b6b;
+  --red-700: #ff8787;
+
+  // 灰色系
+  --gray-50: #141414;
+  --gray-100: #1f1f1f;
+  --gray-200: #2a2a2a;
+  --gray-300: #333333;
+  --gray-400: #4a4a4a;
+  --gray-500: #666666;
+  --gray-600: #888888;
+  --gray-700: #a0a0a0;
+  --gray-800: #b8b8b8;
+  --gray-900: #d0d0d0;
+
+  --black: #ffffff;
+  --white: #1f1f1f;
+
+  // 阴影
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 6px 24px rgba(0, 0, 0, 0.5);
+  --shadow-blue: 0 2px 8px rgba(64, 128, 255, 0.4);
+  --shadow-blue-lg: 0 6px 20px rgba(64, 128, 255, 0.4);
+  --shadow-login: 0 24px 80px rgba(0, 0, 0, 0.6);
+  --shadow-focus: 0 0 0 3px rgba(64, 128, 255, 0.2);
+}

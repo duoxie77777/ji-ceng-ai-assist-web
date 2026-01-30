@@ -100,7 +100,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gradient-login-bg);
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--purple-500) 100%);
   position: relative;
   overflow: hidden;
 
@@ -110,7 +110,7 @@ const handleLogin = async () => {
     content: '';
     position: absolute;
     border-radius: 50%;
-    background: var(--bg-login-decoration);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   &::before {
@@ -130,28 +130,28 @@ const handleLogin = async () => {
 
 .login-card {
   width: 420px;
-  padding: var(--spacing-xxxl) var(--spacing-xxl);
-  background: var(--bg-card);
-  border-radius: var(--radius-xxl);
-  box-shadow: var(--shadow-login-card);
+  padding: 48px 40px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-login);
   position: relative;
   z-index: 1;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: var(--spacing-xxl);
+  margin-bottom: 40px;
 
   h1 {
     font-size: 28px;
     font-weight: 600;
-    color: var(--text-primary);
-    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--gray-900);
+    margin: 0 0 8px 0;
   }
 
   p {
     font-size: 14px;
-    color: var(--text-tertiary);
+    color: var(--gray-500);
     margin: 0;
   }
 }
@@ -162,33 +162,33 @@ const handleLogin = async () => {
 
     label {
       display: block;
-      margin-bottom: var(--spacing-sm);
+      margin-bottom: 8px;
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--gray-900);
     }
 
     input {
       width: 100%;
       height: 44px;
-      padding: 0 var(--spacing-lg);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
+      padding: 0 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
       font-size: 14px;
       box-sizing: border-box;
-      transition: var(--transition-fast);
-      background: var(--bg-page);
-      color: var(--text-primary);
+      transition: all 0.2s;
+      background: var(--gray-50);
+      color: var(--gray-900);
 
       &:focus {
         outline: none;
-        border-color: var(--color-primary);
-        background: var(--bg-card);
-        box-shadow: var(--shadow-input-focus);
+        border-color: var(--blue-500);
+        background: var(--white);
+        box-shadow: var(--shadow-focus);
       }
 
       &::placeholder {
-        color: var(--text-placeholder);
+        color: var(--gray-400);
       }
     }
   }
@@ -196,20 +196,20 @@ const handleLogin = async () => {
   .login-btn {
     width: 100%;
     height: 44px;
-    margin-top: var(--spacing-sm);
-    background: var(--color-primary);
-    color: var(--text-white);
+    margin-top: 8px;
+    background: var(--blue-500);
+    color: var(--white);
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: 8px;
     font-size: 15px;
     font-weight: 500;
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: all 0.2s;
 
     &:hover:not(:disabled) {
-      background: var(--color-primary-hover);
+      background: var(--blue-400);
       transform: translateY(-1px);
-      box-shadow: var(--shadow-button-hover);
+      box-shadow: var(--shadow-blue-lg);
     }
 
     &:active:not(:disabled) {
@@ -223,14 +223,14 @@ const handleLogin = async () => {
   }
 
   .login-tip {
-    margin-top: var(--spacing-xl);
+    margin-top: 24px;
     padding-top: 20px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--gray-200);
     text-align: center;
 
     p {
       font-size: 12px;
-      color: var(--text-tertiary);
+      color: var(--gray-500);
       margin: 0;
     }
   }
