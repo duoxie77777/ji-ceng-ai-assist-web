@@ -5,11 +5,13 @@
       <!-- Logo 区域 -->
       <div class="logo-section">
         <div class="logo">
-          <span v-if="!isCollapsed" class="logo-text">
-            <img src="@/assets/logoText.png" alt="">
+          <span v-if="!isCollapsed">
+            <img v-if="themeStore.isDark" src="@/assets/logoText-dark.png" alt="Logo">
+            <img v-else src="@/assets/logoText.png" alt="Logo">
           </span>
-          <span v-else class="logo-icon">
-            <img src="@/assets/logo.png" alt="">
+          <span v-else>
+            <img v-if="themeStore.isDark" src="@/assets/logo-dark.png" alt="Logo">
+            <img v-else src="@/assets/logo.png" alt="Logo">
           </span>
         </div>
       </div>
