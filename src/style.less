@@ -4,6 +4,26 @@
   box-sizing: border-box;
 }
 
+// 滚动条区域
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-200) transparent;
+}
+
+/* Webkit 浏览器 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+// ============
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -37,4 +57,9 @@ body {
 .flex-justify-center {
   display: flex;
   justify-content: center;
+}
+
+.flex-justify-between {
+  display: flex;
+  justify-content: space-between;
 }

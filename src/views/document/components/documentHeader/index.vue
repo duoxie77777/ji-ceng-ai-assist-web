@@ -14,19 +14,22 @@ import { reactive } from 'vue'
 const contentMap = reactive<Record<string, any>>([
     {
         title: "新建文档",
-        icon: "icon-table",
+        icon: "qiweizaixianwendang-fill",
     }, {
         title: "新建表格",
-        icon: "icon-table",
+        icon: "qiweizaixianbiaoge-fill",
     }, {
         title: "新建幻灯片",
-        icon: "icon-table",
+        icon: "qiweiyanshiwengao-fill",
     }, {
-        title: "新建思维导图",
-        icon: "icon-table",
+        title: "新建收集表",
+        icon: "qiweishoujibiao-fill",
     }, {
         title: "新建流程图",
-        icon: "icon-table",
+        icon: "qiweiliuchengtu-fill",
+    }, {
+        title: "新建思维导图",
+        icon: "qiweisiweidaotu-fill",
     },
 ])
 </script>
@@ -37,16 +40,21 @@ const contentMap = reactive<Record<string, any>>([
     height: 100%;
 
     .documentHeader-content {
-        gap: 40px;
+        gap: 20px;
         height: 100%;
 
         .documentHeader-content-item {
             cursor: default;
+            gap: 5px;
             font-size: 12px;
-            background-color: var(--blue-400);
-            color: var(--white);
+            color: var(--gray-900);
             padding: 7px 14px;
-            border-radius: 10px;
+            border-radius: 5px;
+        }
+
+        .documentHeader-content-item:hover {
+            cursor: pointer;
+            background-color: var(--gray-100);
         }
     }
 }

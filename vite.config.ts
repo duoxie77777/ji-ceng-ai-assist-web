@@ -12,7 +12,7 @@ import postcssPxtorem from 'postcss-pxtorem'
 export default defineConfig(({ command, mode }) => {
   // 加载环境变量
   const env = loadEnv(mode, process.cwd())
-  
+
   return {
     plugins: [
       vue(),

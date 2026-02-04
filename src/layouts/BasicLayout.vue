@@ -251,7 +251,7 @@ watch(showUserMenu, (newVal) => {
 
   img {
     width: 100%;
-    height: 56px;
+    height: 36px;
   }
 }
 

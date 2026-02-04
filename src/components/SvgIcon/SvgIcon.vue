@@ -39,29 +39,39 @@ const symbolId = computed(() => `#icon-${props.name}`)
 // 计算样式
 const iconStyle = computed(() => {
   const style: Record<string, string> = {}
-  
+  const rootValue = 16 // 与 postcss-pxtorem 的 rootValue 保持一致
+
   // 处理大小
   if (props.size) {
-    const size = typeof props.size === 'number' ? `${props.size}px` : props.size
+    let size: string
+    if (typeof props.size === 'number') {
+      // 数字类型，转换为 rem
+      size = `${props.size / rootValue}rem`
+    } else if (/^\d+$/.test(props.size)) {
+      // 纯数字字符串，转换为 rem
+      size = `${parseFloat(props.size) / rootValue}rem`
+    } else {
+      // 已带单位的字符串（如 '2em', '1rem'），直接使用
+      size = props.size
+    }
     style.width = size
     style.height = size
   }
-  
-  // 处理颜色 - 使用 fill 而不是 color
+
+  // 处理颜色
   if (props.color) {
     style.fill = props.color
   }
-  
+
   return style
 })
+
 </script>
 
-<style scoped>
+<style lang="less">
 .svg-icon {
   vertical-align: -0.15em;
   fill: currentColor;
   overflow: hidden;
-  /* width 和 height 通过 style 属性动态设置 */
 }
-
 </style>
