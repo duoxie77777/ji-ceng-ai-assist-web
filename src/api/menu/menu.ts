@@ -10,7 +10,8 @@ export interface MenuItem {
     title: string
     icon?: string
     keepAlive?: boolean
-  }
+  },
+  children?: MenuItem[]
 }
 
 // 菜单 API

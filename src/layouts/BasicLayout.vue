@@ -84,9 +84,9 @@
 
       <!-- 内容区域 -->
       <!-- <el-watermark :font="watermarkFont" :content="watermarkContent"> -->
-        <main class="content">
-          <router-view />
-        </main>
+      <main class="content">
+        <router-view />
+      </main>
       <!-- </el-watermark> -->
 
     </div>
@@ -94,17 +94,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, reactive } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Search } from '@element-plus/icons-vue'
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue'
 import { userApi } from '@/api/user/user'
 import { menuApi } from '@/api/menu/menu'
 import { resetPermissionGuard } from '@/router/guards/permission'
-import type { MenuItemMock } from '../../mock/menu'
+import type { MenuItem } from '@/api/menu/menu'
 import { ElMessageBoxPro } from '@/components/custom/ElMessageBoxPro'
-import { getFormattedCurrentTime } from "@/utils/time/timeUtils"
-import { useUserStore, useThemeStore } from '@/store'
+// import { getFormattedCurrentTime } from "@/utils/time/timeUtils"
+import { useThemeStore } from '@/store'
 const router = useRouter()
 const route = useRoute()
 const themeStore = useThemeStore()
@@ -113,15 +113,15 @@ const themeStore = useThemeStore()
 const isCollapsed = ref(false)
 const showUserMenu = ref(false)
 const userInfo = ref<any>(null)
-const menuList = ref<MenuItemMock[]>([])
+const menuList = ref<MenuItem[]>([])
 
 
 // 水印内容(用户姓名+时间)
-const watermarkContent = ref(['admin', getFormattedCurrentTime()])
-const watermarkFont = reactive({
-  color: 'rgba(0, 0, 0, .15)',
-  fontSize: 14,
-})
+// const watermarkContent = ref(['admin', getFormattedCurrentTime()])
+// const watermarkFont = reactive({
+//   color: 'rgba(0, 0, 0, .15)',
+//   fontSize: 14,
+// })
 
 // 计算属性
 const userInitial = computed(() => {

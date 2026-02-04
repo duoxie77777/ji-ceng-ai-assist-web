@@ -1,7 +1,8 @@
 <template>
     <div class="documentHeader">
         <div class="documentHeader-content flex-align-center">
-            <div class="documentHeader-content-item flex-center" v-for="(item, index) in contentMap" :key="index">
+            <div class="documentHeader-content-item flex-center" v-for="(item, index) in contentMap" :key="index"
+                @click="toPage(item)">
                 <svg-icon :name="item.icon" />
                 <div class="documentHeader-content-item-title">{{ item.title }}</div>
             </div>
@@ -11,6 +12,8 @@
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const contentMap = reactive<Record<string, any>>([
     {
         title: "新建文档",
@@ -32,6 +35,11 @@ const contentMap = reactive<Record<string, any>>([
         icon: "qiweisiweidaotu-fill",
     },
 ])
+
+const toPage = (item: Record<string, any>) => {
+    // console.log('点击了', item);
+    router.push('/document/word')
+}
 </script>
 
 <style scoped lang="less">

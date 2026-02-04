@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path'
 import { viteMockServe } from 'vite-plugin-mock'
+import path from 'path'
 // element-plus 按需引入插件
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -30,7 +30,7 @@ export default defineConfig(({ command, mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src')
+        "@": path.resolve(__dirname, "src")
       }
     },
     // 定义全局常量

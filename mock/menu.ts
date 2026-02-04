@@ -1,20 +1,7 @@
-import type { MockMethod } from 'vite-plugin-mock'
-
-// 菜单数据类型定义
-export interface MenuItemMock {
-  id: string
-  path: string
-  name: string
-  component: string
-  meta: {
-    title: string
-    icon?: string
-    keepAlive?: boolean
-  }
-}
-
+import type { MockMethod } from 'vite-plugin-mock';
+import type { MenuItem } from "@/api/menu/menu.ts";
 // 模拟菜单数据 - 基于现有页面
-const menuList: MenuItemMock[] = [
+export const menuList: MenuItem[] = [
   {
     id: '1',
     path: '/home',
@@ -46,7 +33,19 @@ const menuList: MenuItemMock[] = [
       title: '在线文档',
       icon: 'wendang-caogao-F',
       keepAlive: true
-    }
+    },
+    children: [
+      {
+        id: '3-1',
+        path: 'word',
+        name: 'Word',
+        component: '/document/components/documentContent/Word/index',
+        meta: {
+          title: 'Word文档',
+          keepAlive: true
+        }
+      }
+    ]
   },
   {
     id: '4',
