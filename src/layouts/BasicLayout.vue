@@ -250,8 +250,9 @@ watch(showUserMenu, (newVal) => {
   }
 
   img {
-    width: 100%;
-    height: 36px;
+    width: 90%;
+    height: 2.25rem;
+    margin: 5px 5px 0 8px;
   }
 }
 
