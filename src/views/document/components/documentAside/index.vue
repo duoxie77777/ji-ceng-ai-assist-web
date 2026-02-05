@@ -1,7 +1,8 @@
 <template>
     <div class="documentAside">
         <div class="documentAside-content">
-            <div class="documentAside-content-item flex-align-center" v-for="(item, index) in contentMap" :key="index">
+            <div class="documentAside-content-item flex-align-center" v-for="item in contentMap" :key="item.id"
+                @click="toPage(item.type)">
                 <svg-icon size="26" :name="assignIcon(item.type)"></svg-icon>
                 <div class="content-item-info flex">
                     <div class="item-title">{{ item.title }}</div>
@@ -17,164 +18,52 @@
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
-
-const iconMap: Record<string, string> = {
-    document: "qiweizaixianwendang-fill",
-    table: "qiweizaixianbiaoge-fill",
-    slide: "qiweiyanshiwengao-fill",
-    collect: "qiweishoujibiao-fill",
-    flow: "qiweiliuchengtu-fill",
-    mind: "qiweisiweidaotu-fill",
-    other: "qitawenjian-fill",
-}
-
+import { assignIcon, assignRoute } from '@/views/document/utils/assign'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 const contentMap = reactive<Record<string, any>>([
     {
         title: "在线文档",
-        type: "document",
+        type: "Word",
         time: "2025-01-01",
         desc: "这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档"
     },
     {
         title: "在线表格",
-        type: "table",
+        type: "Excel",
         time: "2025-01-01",
         desc: "这是一个在线表格1231231"
     },
     {
         title: "在线幻灯片",
-        type: "slide",
+        type: "PPT",
         time: "2025-01-01",
         desc: "这是一个在线幻灯片"
     },
     {
         title: "在线收集表",
-        type: "collect",
+        type: "CollectionForm",
         time: "2025-01-01",
         desc: "这是一个在线收集表"
     },
     {
         title: "在线流程图",
-        type: "flow",
+        type: "FlowChart",
         time: "2025-01-01",
         desc: "这是一个在线流程图"
     },
     {
         title: "在线思维导图",
-        type: "mind",
-        time: "2025-01-01",
-        desc: "这是一个在线思维导图"
-    }, {
-        title: "在线文档",
-        type: "document",
-        time: "2025-01-01",
-        desc: "这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档"
-    },
-    {
-        title: "在线表格",
-        type: "table",
-        time: "2025-01-01",
-        desc: "这是一个在线表格1231231"
-    },
-    {
-        title: "在线幻灯片",
-        type: "slide",
-        time: "2025-01-01",
-        desc: "这是一个在线幻灯片"
-    },
-    {
-        title: "在线收集表",
-        type: "collect",
-        time: "2025-01-01",
-        desc: "这是一个在线收集表"
-    },
-    {
-        title: "在线流程图",
-        type: "flow",
-        time: "2025-01-01",
-        desc: "这是一个在线流程图"
-    },
-    {
-        title: "在线思维导图",
-        type: "mind",
-        time: "2025-01-01",
-        desc: "这是一个在线思维导图"
-    }, {
-        title: "在线文档",
-        type: "document",
-        time: "2025-01-01",
-        desc: "这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档"
-    },
-    {
-        title: "在线表格",
-        type: "table",
-        time: "2025-01-01",
-        desc: "这是一个在线表格1231231"
-    },
-    {
-        title: "在线幻灯片",
-        type: "slide",
-        time: "2025-01-01",
-        desc: "这是一个在线幻灯片"
-    },
-    {
-        title: "在线收集表",
-        type: "collect",
-        time: "2025-01-01",
-        desc: "这是一个在线收集表"
-    },
-    {
-        title: "在线流程图",
-        type: "flow",
-        time: "2025-01-01",
-        desc: "这是一个在线流程图"
-    },
-    {
-        title: "在线思维导图",
-        type: "mind",
-        time: "2025-01-01",
-        desc: "这是一个在线思维导图"
-    }, {
-        title: "在线文档",
-        type: "document",
-        time: "2025-01-01",
-        desc: "这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档这是一个在线文档"
-    },
-    {
-        title: "在线表格",
-        type: "table",
-        time: "2025-01-01",
-        desc: "这是一个在线表格1231231"
-    },
-    {
-        title: "在线幻灯片",
-        type: "slide",
-        time: "2025-01-01",
-        desc: "这是一个在线幻灯片"
-    },
-    {
-        title: "在线收集表",
-        type: "collect",
-        time: "2025-01-01",
-        desc: "这是一个在线收集表"
-    },
-    {
-        title: "在线流程图",
-        type: "flow",
-        time: "2025-01-01",
-        desc: "这是一个在线流程图"
-    },
-    {
-        title: "在线思维导图",
-        type: "mind",
+        type: "MindMap",
         time: "2025-01-01",
         desc: "这是一个在线思维导图"
     }
 ])
 
-const assignIcon = (type: string) => {
-    return iconMap[type] || iconMap["other"]
+const toPage = (type: string) => {
+    router.push(assignRoute(type))
 }
+
 </script>
 
 <style scoped lang="less">

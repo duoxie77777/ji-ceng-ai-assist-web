@@ -10,9 +10,7 @@
       <aside>
         <documentAside />
       </aside>
-      <main>
-        <documentContent />
-      </main>
+      <documentContent />
     </div>
   </div>
 </template>

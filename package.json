@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@handsontable/vue3": "^16.2.0",
     "axios": "^1.13.2",
     "element-plus": "^2.13.1",
+    "handsontable": "^16.2.0",
     "less": "^4.5.1",
     "pinia": "^3.0.4",
     "postcss-pxtorem": "^6.1.0",
@@ -24,6 +26,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "mockjs": "^1.1.0",
+    "sass-embedded": "^1.97.3",
     "typescript": "~5.9.3",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^31.0.0",

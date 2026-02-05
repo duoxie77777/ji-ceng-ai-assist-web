@@ -1,0 +1,96 @@
+// 单元格边框
+:deep(.handsontable td),
+:deep(.handsontable th) {
+    border-color: var(--gray-200) !important;
+}
+
+// Handsontable 选中颜色变量覆盖
+:deep(.handsontable) {
+    --ht-cell-selection-background-color: rgba(0, 0, 0, 0.01);
+}
+
+// 列头样式
+:deep(.handsontable thead th) {
+    background-color: var(--mint-50);
+    color: var(--gray-700);
+    font-weight: 500;
+    text-align: center;
+    border-bottom: 1px solid var(--mint-200) !important;
+}
+
+// 行头样式
+:deep(.handsontable tbody th) {
+    background-color: var(--mint-50);
+    color: var(--gray-700);
+    font-weight: 400;
+    text-align: center;
+    border-right: 1px solid var(--mint-200) !important;
+}
+
+// 普通单元格
+:deep(.handsontable td) {
+    background-color: var(--white);
+}
+
+// 选中单元格高亮
+:deep(.handsontable td.current) {
+    background-color: rgba(101, 208, 140, 0.08) !important;
+    box-shadow: inset 0 0 0 2px var(--mint-400);
+}
+
+// 选中区域样式
+:deep(.handsontable .area) {
+    background-color: rgba(101, 208, 140, 0.08) !important;
+}
+
+// 当前行高亮
+:deep(.handsontable td.currentRow) {
+    background-color: var(--mint-50) !important;
+}
+
+// 当前列高亮
+:deep(.handsontable td.currentCol) {
+    background-color: var(--mint-50) !important;
+}
+
+// 选中的行头/列头高亮
+:deep(.handsontable th.ht__highlight) {
+    background-color: var(--mint-400) !important;
+    color: #fff !important;
+}
+
+// 选择边框
+:deep(.handsontable .wtBorder) {
+    background-color: var(--mint-400) !important;
+}
+
+:deep(.handsontable .wtBorder.corner) {
+    background-color: var(--mint-400) !important;
+}
+
+// 编辑框
+:deep(.handsontable .handsontableInput) {
+    border: 1px solid var(--mint-400) !important;
+    box-shadow: 0 2px 8px rgba(101, 208, 140, 0.01);
+    outline: none;
+}
+
+// 滚动条
+:deep(.handsontable ::-webkit-scrollbar) {
+    width: 6px;
+    height: 6px;
+}
+
+:deep(.handsontable ::-webkit-scrollbar-track) {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+:deep(.handsontable ::-webkit-scrollbar-thumb) {
+    background: var(--gray-400);
+    border-radius: 3px;
+
+    &:hover {
+        background: var(--gray-500);
+    }
+}

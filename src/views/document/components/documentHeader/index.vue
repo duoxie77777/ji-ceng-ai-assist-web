@@ -3,7 +3,7 @@
         <div class="documentHeader-content flex-align-center">
             <div class="documentHeader-content-item flex-center" v-for="(item, index) in contentMap" :key="index"
                 @click="toPage(item)">
-                <svg-icon :name="item.icon" />
+                <svg-icon :name="assignIcon(item.type)" />
                 <div class="documentHeader-content-item-title">{{ item.title }}</div>
             </div>
         </div>
@@ -12,33 +12,33 @@
 
 <script lang="ts" setup>
 import { reactive } from 'vue'
+import { assignIcon, assignRoute } from '@/views/document/utils/assign'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const contentMap = reactive<Record<string, any>>([
     {
         title: "新建文档",
-        icon: "qiweizaixianwendang-fill",
+        type: "Word",
     }, {
         title: "新建表格",
-        icon: "qiweizaixianbiaoge-fill",
+        type: "Excel",
     }, {
         title: "新建幻灯片",
-        icon: "qiweiyanshiwengao-fill",
+        type: "PPT",
     }, {
         title: "新建收集表",
-        icon: "qiweishoujibiao-fill",
+        type: "CollectionForm",
     }, {
         title: "新建流程图",
-        icon: "qiweiliuchengtu-fill",
+        type: "FlowChart",
     }, {
         title: "新建思维导图",
-        icon: "qiweisiweidaotu-fill",
+        type: "MindMap",
     },
 ])
 
 const toPage = (item: Record<string, any>) => {
-    // console.log('点击了', item);
-    router.push('/document/word')
+    router.push(assignRoute(item.type))
 }
 </script>
 

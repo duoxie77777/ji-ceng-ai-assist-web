@@ -44,6 +44,56 @@ export const menuList: MenuItem[] = [
           title: 'Word文档',
           keepAlive: true
         }
+      },
+      {
+        id: '3-2',
+        path: 'excel',
+        name: 'Excel',
+        component: '/document/components/documentContent/Excel/index',
+        meta: {
+          title: 'Excel表格',
+          keepAlive: true
+        }
+      },
+      {
+        id: '3-3',
+        path: 'ppt',
+        name: 'PPT',
+        component: '/document/components/documentContent/PPT/index',
+        meta: {
+          title: 'PPT幻灯片',
+          keepAlive: true
+        }
+      },
+      {
+        id: '3-4',
+        path: 'collectionForm',
+        name: 'CollectionForm',
+        component: '/document/components/documentContent/CollectionForm/index',
+        meta: {
+          title: '收集表',
+          keepAlive: true
+        }
+      },
+      {
+        id: '3-5',
+        path: 'flowChart',
+        name: 'FlowChart',
+        component: '/document/components/documentContent/FlowChart/index',
+        meta: {
+          title: '流程图',
+          keepAlive: true
+        }
+      },
+      {
+        id: '3-6',
+        path: 'mindMap',
+        name: 'MindMap',
+        component: '/document/components/documentContent/MindMap/index',
+        meta: {
+          title: '思维导图',
+          keepAlive: true
+        }
       }
     ]
   },
