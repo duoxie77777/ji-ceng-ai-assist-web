@@ -3,6 +3,8 @@ import App from './App.vue'
 import router from './router'
 import { store } from './store'
 import './style.less'
+
+import { createPinia } from 'pinia';
 // 引入 CSS 变量
 import './styles/theme.less'
 // 引入iconfont
@@ -28,4 +30,5 @@ app.component('SvgIcon', SvgIcon)
 app.use(store)
 app.use(router)
 
+app.use(createPinia()); // 注册Pinia
 app.mount('#app')
