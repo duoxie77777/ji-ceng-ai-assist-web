@@ -1,24 +1,46 @@
-// src/stores/chatStore.ts
+
 import { defineStore } from 'pinia';
 import type { Conversation, Message, User, SearchResult } from '@/views/message/utils/chat';
+import { nextTick } from 'vue';
 
+
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return '未知日期';
+  }
+
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const msgDateStr = date.toDateString();
+  const todayStr = today.toDateString();
+  const yesterdayStr = yesterday.toDateString();
+
+  if (msgDateStr === todayStr) return '今天';
+  if (msgDateStr === yesterdayStr) return '昨天';
+
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+}
 export const useChatStore = defineStore('chat', {
   state: () => ({
     conversations: [] as Conversation[],
     activeConvId: '' as string,
     showDetailPanel: false,
-    searchKeyword: '' as string, // 新增：搜索关键词
-    searchResults: [] as SearchResult[], // 新增：搜索结果
+    searchKeyword: '' as string,
+    searchResults: [] as SearchResult[],
+    highlightMsgId: '' as string,
   }),
 
   actions: {
-    // 初始化聊天数据（修复：确保默认数据必存+格式正确）
+    // 初始化聊天数据
     initChatData() {
       try {
         const savedConversations = localStorage.getItem('chat_conversations');
         const savedActiveId = localStorage.getItem('chat_activeConvId');
 
-        // 如果本地无数据，强制初始化默认数据（保证消息不丢）
+        // 如果本地无数据，强制初始化默认数据
         if (!savedConversations) {
           const defaultUser1: User = {
             id: 'user-1',
@@ -27,12 +49,11 @@ export const useChatStore = defineStore('chat', {
             email: 'mat_anderson@gmail.com',
             bio: 'Product Designer',
             phone: '(213) 555-1234',
-            lastSeen: 'recently',
+            sex: '女',
             address: {
-              country: 'United States of America',
-              postalCode: 'ERT 62574',
-              taxId: 'AS56417896',
+              country: 'United States of America'
             },
+            isRead: false
           };
 
           const defaultUser2: User = {
@@ -42,15 +63,14 @@ export const useChatStore = defineStore('chat', {
             email: 'ethan@example.com',
             bio: 'Developer',
             phone: '(213) 555-5678',
-            lastSeen: '15m ago',
+            sex: '男',
             address: {
-              country: 'USA',
-              postalCode: '90210',
-              taxId: 'XX123456',
+              country: 'USA'
             },
+            isRead: false
           };
 
-          // 默认会话+消息（确保timestamp是标准ISO格式）
+          // 默认会话+消息
           this.conversations = [
             {
               id: 'conv-1',
@@ -124,17 +144,16 @@ export const useChatStore = defineStore('chat', {
             },
           ];
           this.activeConvId = 'conv-1';
-          this.saveChatData(); // 强制保存默认数据到本地
+          this.saveChatData();
         } else {
-          // 方案2：有本地数据，修复格式+补全缺失字段
           this.conversations = JSON.parse(savedConversations).map((conv: Conversation) => ({
             ...conv,
             isActive: conv.id === savedActiveId,
             messages: conv.messages.map((msg: Message) => ({
               ...msg,
-              type: msg.type || 'text', // 兼容旧数据：默认文本类型
+              type: msg.type || 'text',
               isRead: msg.isRead || false,
-              timestamp: msg.timestamp || new Date().toISOString(), // 修复空时间
+              timestamp: msg.timestamp || new Date().toISOString(),
             })),
           }));
           this.activeConvId = savedActiveId || 'conv-1';
@@ -148,10 +167,9 @@ export const useChatStore = defineStore('chat', {
       }
     },
 
-    // 保存数据（加固：防止循环引用）
+    // 保存数据
     saveChatData() {
       try {
-        // 深拷贝+过滤循环引用
         const safeConversations = JSON.parse(JSON.stringify(this.conversations));
         localStorage.setItem('chat_conversations', JSON.stringify(safeConversations));
         localStorage.setItem('chat_activeConvId', this.activeConvId);
@@ -160,7 +178,7 @@ export const useChatStore = defineStore('chat', {
       }
     },
 
-    // 切换会话（修复：标记激活状态+清空未读）
+    // 切换会话
     switchConversation(id: string) {
       this.conversations.forEach(conv => {
         conv.isActive = conv.id === id;
@@ -175,11 +193,11 @@ export const useChatStore = defineStore('chat', {
           }
         });
         conv.unreadCount = 0;
-        this.saveChatData(); // 必存！
+        this.saveChatData();
       }
     },
 
-    // 发送文本消息（修复：确保必存+格式正确）
+    // 发送文本消息（
     sendMessage(content: string) {
       if (!content.trim() || !this.activeConvId) return;
 
@@ -192,7 +210,7 @@ export const useChatStore = defineStore('chat', {
         senderName: 'John Wilson',
         senderAvatar: 'https://i.pravatar.cc/150?u=me',
         content,
-        timestamp: new Date().toISOString(), // 标准ISO格式
+        timestamp: new Date().toISOString(),
         isOwn: true,
         isRead: true,
         type: 'text',
@@ -201,7 +219,7 @@ export const useChatStore = defineStore('chat', {
       conv.messages.push(newMsg);
       conv.lastMessage = content;
       conv.lastMessageTime = this.formatTime(new Date());
-      this.saveChatData(); // 发送后立即保存！
+      this.saveChatData();
 
       this.mockReply(conv.id);
     },
@@ -233,7 +251,7 @@ export const useChatStore = defineStore('chat', {
           size: file.size,
           url: fileUrl,
           type: file.type || 'application/octet-stream',
-          isImage: isImage, // 标记是否是图片
+          isImage: isImage,
         },
       };
 
@@ -274,16 +292,13 @@ export const useChatStore = defineStore('chat', {
       }, 1000);
     },
 
-    // 格式化时间（小时:分钟 am/pm）
     formatTime(date: Date) {
       const minutes = date.getMinutes().toString().padStart(2, '0');
       return `${date.getHours()}:${minutes} ${date.getHours() >= 12 ? 'pm' : 'am'}`;
     },
 
-    // 格式化日期（修复：兼容所有时间格式）
     formatDate(dateStr: string) {
       const date = new Date(dateStr);
-      // 处理无效日期
       if (isNaN(date.getTime())) {
         return '未知日期';
       }
@@ -292,7 +307,6 @@ export const useChatStore = defineStore('chat', {
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      // 统一转成日期字符串比较（避免时区问题）
       const msgDateStr = date.toDateString();
       const todayStr = today.toDateString();
       const yesterdayStr = yesterday.toDateString();
@@ -300,34 +314,29 @@ export const useChatStore = defineStore('chat', {
       if (msgDateStr === todayStr) return '今天';
       if (msgDateStr === yesterdayStr) return '昨天';
 
-      // 其他日期显示：月/日
       return `${date.getMonth() + 1}/${date.getDate()}`;
     },
 
-    // 格式化文件大小
     formatFileSize(bytes: number) {
       if (bytes < 1024) return `${bytes} B`;
       if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
       return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     },
-    // 新增：全局搜索（搜联系人+消息）
+    // 全局搜索（搜联系人+消息）
     searchChats(keyword: string) {
       this.searchKeyword = keyword.trim();
       this.searchResults = [];
 
-      // 空关键词清空结果
       if (!this.searchKeyword) return;
 
       const lowerKeyword = this.searchKeyword.toLowerCase();
 
-      // 遍历所有会话
       this.conversations.forEach(conv => {
         const convName = conv.participant.name.toLowerCase();
         const results: SearchResult[] = [];
 
         // 1. 搜索联系人名称
         if (convName.includes(lowerKeyword)) {
-          // 高亮匹配的关键词
           const matchText = conv.participant.name.replace(
             new RegExp(`(${this.searchKeyword})`, 'gi'),
             '<span class="highlight">$1</span>'
@@ -340,9 +349,8 @@ export const useChatStore = defineStore('chat', {
           });
         }
 
-        // 2. 搜索聊天消息内容
+        // 2. 搜索聊天消息内容 
         conv.messages.forEach(msg => {
-          // 文本消息搜内容，文件消息搜文件名
           let searchContent = '';
           if (msg.type === 'text') {
             searchContent = msg.content.toLowerCase();
@@ -351,7 +359,6 @@ export const useChatStore = defineStore('chat', {
           }
 
           if (searchContent.includes(lowerKeyword)) {
-            // 高亮匹配的关键词
             let matchContent = '';
             if (msg.type === 'text') {
               matchContent = msg.content.replace(
@@ -372,40 +379,51 @@ export const useChatStore = defineStore('chat', {
               content: msg.type === 'text' ? msg.content : msg.fileInfo?.name,
               timestamp: msg.timestamp,
               matchText: matchContent,
+              msgId: msg.id,
             });
           }
         });
 
-        // 把当前会话的搜索结果加入全局结果
         this.searchResults.push(...results);
       });
     },
+
 
     // 清空搜索
     clearSearch() {
       this.searchKeyword = '';
       this.searchResults = [];
     },
+    setSingleMsgHighlight(msgId: string) {
+      this.highlightMsgId = '';
+      this.highlightMsgId = msgId;
+      setTimeout(() => {
+        this.highlightMsgId = '';
+      }, 1000);
+    },
 
     // 点击搜索结果，切换会话+定位消息
     selectSearchResult(result: SearchResult) {
-      // 切换到对应会话
       this.switchConversation(result.conversationId);
-      // 清空搜索
       this.clearSearch();
 
-      // 如果是消息结果，滚动到对应消息位置
-      if (result.type === 'message' && result.content) {
-        // 触发全局事件，让ChatArea定位消息
-        window.dispatchEvent(new CustomEvent('scrollToMessage', {
-          detail: {
-            conversationId: result.conversationId,
-            content: result.content,
-          }
-        }));
-      }
+      nextTick(() => {
+        if (result.type === 'message' && result.content && result.msgId) {
+          window.dispatchEvent(new CustomEvent('scrollToMessage', {
+            detail: {
+              conversationId: result.conversationId,
+              content: result.content,
+              msgId: result.msgId,
+            }
+          }));
+          this.setSingleMsgHighlight(result.msgId);
+        }
+      });
     },
   },
+
+
+
 
   getters: {
     // 当前激活的会话
@@ -429,12 +447,17 @@ export const useChatStore = defineStore('chat', {
       });
 
       sortedMessages.forEach(msg => {
-        const msgDate = this.formatDate(msg.timestamp);
+        const msgDate = formatDate(msg.timestamp);
+
         if (msgDate !== currentDate) {
           currentDate = msgDate;
           groups.push({ date: currentDate, messages: [] });
         }
-        groups[groups.length - 1].messages.push(msg);
+
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup) {
+          lastGroup.messages.push(msg);
+        }
       });
 
       return groups;

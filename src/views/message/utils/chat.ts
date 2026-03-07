@@ -6,7 +6,6 @@ export interface User {
   email: string;
   bio: string;
   phone: string;
-  lastSeen: string;
   sex: string;
   address: {
     country: string;
@@ -24,14 +23,14 @@ export interface Message {
   timestamp: string;
   isOwn: boolean;
   isRead: boolean;
-  type: 'text' | 'file'; 
-  fileInfo?: { 
+  type: 'text' | 'file';
+  fileInfo?: {
     name: string;
     size: number;
     url: string;
     type: string;
+    isImage?: boolean; // 标记是否是图片
   };
-  isImage?: boolean; // 标记是否是图片
 }
 
 export interface Conversation {
@@ -60,4 +59,5 @@ export interface SearchResult {
   content?: string; // 消息内容（仅message类型有）
   timestamp?: string; // 消息时间（仅message类型有）
   matchText: string; // 高亮后的匹配文本
+  msgId?: string;
 }

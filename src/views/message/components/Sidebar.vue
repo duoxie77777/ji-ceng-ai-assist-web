@@ -1,26 +1,29 @@
 <template>
   <div class="sidebar">
-    <!-- 搜索栏 -->
     <div class="search-bar">
       <input type="text" v-model="searchKeyword" placeholder="Search conversations or messages..." @input="handleSearch"
         @clear="chatStore.clearSearch()" />
-      <button v-if="searchKeyword" @click="chatStore.clearSearch()">×</button>
-      <button v-else>🔍</button>
+      <button v-if="searchKeyword" @click="chatStore.clearSearch()">
+        <svg-icon name="cuo" size="16" />
+      </button>
+      <button v-else>
+        <svg-icon name="sousuo" size="26" />
+      </button>
     </div>
 
-    <!-- 搜索结果（有关键词时显示） -->
+    <!-- 搜索结果 -->
     <div v-if="chatStore.searchKeyword" class="search-results">
       <div v-if="chatStore.searchResults.length === 0" class="no-results">
         没有找到 "{{ chatStore.searchKeyword }}" 相关内容
       </div>
       <div v-else class="result-item" v-for="(result, index) in chatStore.searchResults" :key="index"
-        @click="chatStore.selectSearchResult(result)">
-        <!-- 会话结果 -->
+        :class="{ 'highlight-active': highlightIndex === index }" @click="handleResultClick(result, index)">
+
         <div v-if="result.type === 'conversation'" class="conv-result">
           <div class="result-type">联系人</div>
           <div class="result-content" v-html="result.matchText"></div>
         </div>
-        <!-- 消息结果 -->
+
         <div v-if="result.type === 'message'" class="msg-result">
           <div class="result-type">消息 · {{ result.conversationName }}</div>
           <div class="result-content" v-html="result.matchText"></div>
@@ -29,7 +32,7 @@
       </div>
     </div>
 
-    <!-- 会话列表（无搜索时显示） -->
+    <!-- 会话列表 -->
     <div v-else class="conversations-list">
       <div v-for="conversation in chatStore.conversations" :key="conversation.id"
         :class="['conversation-item', { active: conversation.id === chatStore.activeConvId }]"
@@ -51,21 +54,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useChatStore } from '@/store/modules/chatStrore';
+import { ref, computed } from 'vue';
+import { useChatStore } from '@/views/message/utils/chatStrore';
 
 const chatStore = useChatStore();
 const searchKeyword = computed({
   get: () => chatStore.searchKeyword,
   set: (val) => chatStore.searchKeyword = val,
 });
+const highlightIndex = ref(-1);
+let highlightTimer: NodeJS.Timeout | null = null;
 
-// 处理搜索
 const handleSearch = () => {
   chatStore.searchChats(searchKeyword.value);
 };
 
-// 格式化消息时间
+const handleResultClick = (result: any, index: number) => {
+  if (highlightTimer) clearTimeout(highlightTimer);
+  highlightIndex.value = index;
+  chatStore.selectSearchResult(result);
+  highlightTimer = setTimeout(() => {
+    highlightIndex.value = -1;
+  }, 2000);
+};
+
 const formatTime = (iso: string | undefined) => {
   if (!iso) return '';
   const d = new Date(iso);
@@ -110,7 +122,6 @@ const formatTime = (iso: string | undefined) => {
   right: auto;
 }
 
-/* 搜索结果 */
 .search-results {
   padding: 0 16px;
   max-height: calc(100vh - 120px);
@@ -135,6 +146,22 @@ const formatTime = (iso: string | undefined) => {
   border-radius: 8px;
 }
 
+.highlight-active {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  border-radius: 8px;
+}
+
+.highlight-active .result-type,
+.highlight-active .result-time {
+  color: #e0e7ff !important;
+}
+
+.highlight-active .highlight {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
 .result-type {
   font-size: 12px;
   color: #9ca3af;
@@ -146,7 +173,6 @@ const formatTime = (iso: string | undefined) => {
   line-height: 1.4;
 }
 
-/* 关键词高亮 */
 .highlight {
   color: #3b82f6;
   font-weight: 600;
@@ -158,7 +184,6 @@ const formatTime = (iso: string | undefined) => {
   margin-top: 4px;
 }
 
-/* 原有样式 */
 .sidebar {
   width: 350px;
   border-right: 1px solid #e5e7eb;

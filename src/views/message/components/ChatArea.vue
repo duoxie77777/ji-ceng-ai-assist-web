@@ -1,6 +1,5 @@
 <template>
   <div class="chat-area">
-    <!-- 头部 -->
     <div class="chat-header">
       <div class="user-info">
         <img :src="activeConversation?.participant.avatar" class="avatar" />
@@ -9,46 +8,37 @@
         </div>
       </div>
       <div class="header-actions">
-        <button @click="toggleDetailPanel">👤</button>
-        <button>📞</button>
-        <button>📹</button>
-        <button>🔗</button>
-        <button>🔍</button>
-        <button>⋯</button>
+          <button @click="toggleDetailPanel"><svg-icon size="26" name="ren" /></button>
       </div>
     </div>
 
-    <!-- 消息区域 -->
     <div class="messages-container" ref="messagesContainer">
-      <!-- 无消息提示 -->
       <div v-if="!activeConversation || groupedMessages.length === 0" class="empty-message">
         暂无聊天记录，开始聊聊吧～
       </div>
 
-      <!-- 有消息：按日期分组 -->
       <div v-else>
         <div v-for="group in groupedMessages" :key="group.date" class="message-group">
           <div class="date-divider">{{ group.date }}</div>
-          <!-- 单条消息 -->
-          <div v-for="msg in group.messages" :key="msg.id" :class="['message', msg.isOwn ? 'own' : 'other']">
+          <div v-for="msg in group.messages" :key="msg.id" :data-msg-id="msg.id" :class="[
+            'message',
+            msg.isOwn ? 'own' : 'other',
+            msg.id === chatStore.highlightMsgId ? 'msg-flash' : ''
+          ]">
             <div class="message-bubble">
               <div class="sender-name" v-if="!msg.isOwn">{{ msg.senderName }}</div>
 
-              <!-- 文本消息 -->
               <div v-if="msg.type === 'text'" class="text-content">
                 {{ msg.content }}
               </div>
 
-              <!-- 文件消息：区分图片/非图片 -->
               <div v-if="msg.type === 'file'">
-                <!-- 图片消息：直接预览 -->
                 <div v-if="msg.fileInfo?.isImage" class="image-content" @click="previewImage(msg.fileInfo.url)">
                   <img :src="msg.fileInfo.url" :alt="msg.fileInfo.name" class="preview-img" loading="lazy" />
                 </div>
 
-                <!-- 非图片文件：下载样式 -->
                 <div v-else class="file-content" @click="downloadFile(msg)">
-                  <span class="file-icon">📎</span>
+                  <span class="file-icon"><i class="icon">&#xe68f;</i></span>
                   <div class="file-info">
                     <div class="file-name">{{ msg.fileInfo?.name || '未知文件' }}</div>
                     <div class="file-size">{{ formatFileSize(msg.fileInfo?.size || 0) }}</div>
@@ -67,76 +57,77 @@
         </div>
       </div>
     </div>
-    <!-- 图片预览遮罩层（点击图片放大） -->
     <div v-if="previewImageUrl" class="image-preview-mask" @click="previewImageUrl = ''">
       <img :src="previewImageUrl" alt="预览图片" class="preview-mask-img" @click.stop />
     </div>
 
-
-
-    <!-- 输入框（文件上传功能） -->
     <div class="input-area">
-      <!-- 文件上传按钮（隐藏input） -->
-      <label class="attach-btn">
-        +
-        <input ref="fileInputRef" type="file" class="file-input" @change="handleFileUpload" accept="*" />
-      </label>
-      <input type="text" v-model="newMessage" placeholder="Write your message..." @keyup.enter="sendMessage" />
-      <div class="input-actions">
-        <button>Aa</button>
-        <!-- 文件图标（触发上传） -->
-        <button @click="triggerFileInput">📎</button>
-        <!-- 发送按钮 -->
-        <button @click="sendMessage" class="send-btn">➤</button>
-
+      <div class="attach-wrapper" ref="attachWrapperRef">
+        <button class="attach-btn" @click="toggleAttachMenu">
+          <svg-icon name="jia" size="26" />
+        </button>
+        <div v-if="showAttachMenu" class="attach-menu">
+          <div class="menu-item" @click="triggerFileInput">
+            <svg-icon name="wenjian-" size="22" class="menu-icon" />
+            <span class="menu-text">文件</span>
+          </div>
+        </div>
       </div>
-      <!-- 空消息提示（默认隐藏） -->
+
+      <input ref="fileInputRef" type="file" class="file-input" @change="handleFileUpload" accept="*" />
+
+      <input type="text" v-model="newMessage" placeholder="Write your message..." @keyup.enter="sendMessage" />
+      
+      <div class="input-actions">
+        <button @click="sendMessage" class="send-btn">
+          <svg-icon name="send-message" size="26" />
+        </button>
+      </div>
+      
       <div v-if="showEmptyTip" class="empty-tip">发送消息不能为空</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue';
-import { useChatStore } from '@/store/modules/chatStrore';
+import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
+import { useChatStore } from '@/views/message/utils/chatStrore';
 import type { Conversation, Message } from '../utils/chat';
 
-// 初始化Store
 const chatStore = useChatStore();
 const newMessage = ref('');
 const messagesContainer = ref<HTMLElement | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const previewImageUrl = ref('');
-// 空提示控制
 const showEmptyTip = ref(false);
+const highlightMsgId = ref('');
+let highlightTimer: NodeJS.Timeout | null = null;
 let tipTimer: NodeJS.Timeout | null = null;
 
-// 新增：预览图片方法
+const showAttachMenu = ref(false);
+const attachWrapperRef = ref<HTMLElement | null>(null);
+
 const previewImage = (url: string) => {
   previewImageUrl.value = url;
-  // 禁止页面滚动
   document.body.style.overflow = 'hidden';
 };
-// 监听预览关闭，恢复滚动
+
 watch(previewImageUrl, (val) => {
   if (!val) {
     document.body.style.overflow = 'auto';
   }
 });
-// Props（加默认值）
+
 const props = defineProps<{
   activeConversation: Conversation | null;
 }>();
 
-// 事件
 const emit = defineEmits<{
   'toggle-detail': [];
 }>();
 
-// 获取分组消息（从Store的getter）
 const groupedMessages = computed(() => chatStore.groupedMessages);
 
-// 监听：会话/消息变化时滚动到底部
 watch([() => props.activeConversation, () => groupedMessages.value], () => {
   nextTick(() => {
     if (messagesContainer.value) {
@@ -145,35 +136,27 @@ watch([() => props.activeConversation, () => groupedMessages.value], () => {
   });
 }, { immediate: true });
 
-// 格式化时间（小时:分钟）
 const formatTime = (iso: string) => {
   const d = new Date(iso);
   return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} ${d.getHours() >= 12 ? 'pm' : 'am'}`;
 };
 
-// 格式化文件大小
 const formatFileSize = (bytes: number) => {
   return chatStore.formatFileSize(bytes);
 };
 
-
-// 发送文本消息
 const sendMessage = () => {
-  // 去除首尾空格后判断是否为空
   const trimedMsg = newMessage.value.trim();
   if (!trimedMsg) {
-    // 显示提示
     showEmptyTip.value = true;
-    // 3秒后自动隐藏提示
     if (tipTimer) clearTimeout(tipTimer);
     tipTimer = setTimeout(() => {
       showEmptyTip.value = false;
     }, 3000);
-    return; // 空值直接返回，不发送
+    return; 
   }
   chatStore.sendMessage(trimedMsg);
   newMessage.value = '';
-  // 发送后如果提示还在，立即隐藏
   showEmptyTip.value = false;
   if (tipTimer) clearTimeout(tipTimer);
 
@@ -184,7 +167,6 @@ const sendMessage = () => {
   });
 };
 
-// 监听输入框变化：输入内容时自动隐藏提示
 watch(newMessage, (val) => {
   if (val.trim() && showEmptyTip.value) {
     showEmptyTip.value = false;
@@ -192,22 +174,23 @@ watch(newMessage, (val) => {
   }
 });
 
-// 触发文件选择框
+const toggleAttachMenu = () => {
+  showAttachMenu.value = !showAttachMenu.value;
+};
+
 const triggerFileInput = () => {
   if (fileInputRef.value) {
     fileInputRef.value.click();
   }
+  showAttachMenu.value = false;
 };
 
-// 处理文件上传
 const handleFileUpload = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const file = target.files[0];
     chatStore.sendFileMessage(file);
-    // 清空选择框
     target.value = '';
-    // 上传后滚动到底部
     nextTick(() => {
       if (messagesContainer.value) {
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
@@ -216,7 +199,6 @@ const handleFileUpload = (e: Event) => {
   }
 };
 
-// 下载文件
 const downloadFile = (msg: Message) => {
   if (!msg.fileInfo || !msg.fileInfo.url) return;
 
@@ -228,14 +210,71 @@ const downloadFile = (msg: Message) => {
   document.body.removeChild(a);
 };
 
-// 切换详情面板
 const toggleDetailPanel = () => {
   emit('toggle-detail');
 };
+
+const scrollToTargetMessage = (conversationId: string, content: string, msgId?: string) => {
+  if (chatStore.activeConvId !== conversationId) return;
+
+  nextTick(() => {
+    if (!messagesContainer.value) return;
+
+    const msgElements = messagesContainer.value.querySelectorAll('.message');
+    let targetElement: HTMLElement | null = null;
+
+    if (msgId) {
+      targetElement = messagesContainer.value.querySelector(`.message[data-msg-id="${msgId}"]`) as HTMLElement;
+    } else {
+      msgElements.forEach(el => {
+        const textContent = el.querySelector('.text-content')?.textContent?.trim() || '';
+        const fileName = el.querySelector('.file-name')?.textContent?.trim() || '';
+
+        if (textContent === content || fileName === content) {
+          targetElement = el as HTMLElement;
+        }
+      });
+    }
+
+    if (targetElement) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+
+      if (highlightTimer) clearTimeout(highlightTimer);
+      highlightMsgId.value = targetElement.getAttribute('data-msg-id') || '';
+
+      highlightTimer = setTimeout(() => {
+        highlightMsgId.value = '';
+      }, 1000);
+    }
+  });
+};
+
+const handleClickOutside = (e: MouseEvent) => {
+  if (attachWrapperRef.value && !attachWrapperRef.value.contains(e.target as Node)) {
+    showAttachMenu.value = false;
+  }
+};
+
+onMounted(() => {
+  const handleScrollToMessage = (e: CustomEvent) => {
+    const { conversationId, content, msgId } = e.detail;
+    scrollToTargetMessage(conversationId, content, msgId);
+  };
+
+  window.addEventListener('scrollToMessage', handleScrollToMessage as EventListener);
+  document.addEventListener('click', handleClickOutside);
+
+  onUnmounted(() => {
+    window.removeEventListener('scrollToMessage', handleScrollToMessage as EventListener);
+    document.removeEventListener('click', handleClickOutside);
+  });
+});
 </script>
 
 <style scoped>
-/* 基础布局 */
 .chat-area {
   flex: 1;
   display: flex;
@@ -243,10 +282,8 @@ const toggleDetailPanel = () => {
   background: #fff;
   height: 100%;
   min-height: 0;
-  /* 修复flex高度塌陷 */
 }
 
-/* 头部 */
 .chat-header {
   padding: 12px 20px;
   border-bottom: 1px solid #e5e7eb;
@@ -300,7 +337,6 @@ const toggleDetailPanel = () => {
   background: #f9fafb;
 }
 
-/* 无消息提示 */
 .empty-message {
   text-align: center;
   padding: 40px 0;
@@ -308,7 +344,6 @@ const toggleDetailPanel = () => {
   font-size: 14px;
 }
 
-/* 日期分组 */
 .message-group {
   margin-bottom: 16px;
 }
@@ -323,10 +358,63 @@ const toggleDetailPanel = () => {
   border-radius: 4px;
 }
 
-/* 单条消息 */
 .message {
   display: flex;
   margin-bottom: 8px;
+  transition: background-color 0.2s ease;
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: #1e40af;
+    opacity: 1;
+  }
+
+  100% {
+    background-color: transparent;
+    border-color: transparent;
+  }
+}
+
+.msg-flash .message-bubble {
+  animation: highlightFade 1s ease-out forwards;
+  border: 2px solid #1e40af;
+  background-color: #1e40af !important;
+}
+
+.msg-flash .text-content,
+.msg-flash .sender-name,
+.msg-flash .timestamp,
+.msg-flash .read-status {
+  color: white !important;
+  font-weight: 600;
+  animation: none !important;
+}
+
+.message-highlight {
+  background-color: #fffbeb;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.msg-highlight .message-bubble {
+  background-color: #1e40af !important;
+  color: white !important;
+}
+
+.msg-highlight.own .message-bubble {
+  background-color: #1e40af !important;
+}
+
+.msg-highlight.other .message-bubble {
+  background-color: #1e40af !important;
+}
+
+.msg-highlight .text-content,
+.msg-highlight .sender-name,
+.msg-highlight .timestamp,
+.msg-highlight .read-status {
+  color: white !important;
 }
 
 .message.own {
@@ -358,7 +446,6 @@ const toggleDetailPanel = () => {
   color: #1e40af;
 }
 
-/* 消息底部（时间+已读） */
 .message-footer {
   display: flex;
   justify-content: space-between;
@@ -376,7 +463,6 @@ const toggleDetailPanel = () => {
   color: #6b7280;
 }
 
-/* 文件消息样式 */
 .file-content {
   display: flex;
   align-items: center;
@@ -407,13 +493,22 @@ const toggleDetailPanel = () => {
   color: #6b7280;
 }
 
-/* 输入框区域 */
+.icon {
+  font-size: 18px;
+  color: #666;
+}
+
 .input-area {
   padding: 12px 20px;
   border-top: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   gap: 12px;
+  position: relative;
+}
+
+.attach-wrapper {
+  position: relative;
 }
 
 .attach-btn {
@@ -427,14 +522,53 @@ const toggleDetailPanel = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.2s;
 }
 
-/* 隐藏文件选择框 */
+.attach-btn:hover {
+  background: #e5e7eb;
+}
+
+.attach-menu {
+  position: absolute;
+  bottom: 42px; 
+  left: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  width: 120px;
+  z-index: 100;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.menu-item:hover {
+  background: #f3f4f6;
+}
+
+.menu-icon {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+}
+
+.menu-text {
+  flex: 1;
+}
+
 .file-input {
   display: none;
 }
 
-/* 文本输入框 */
 .input-area input[type="text"] {
   flex: 1;
   padding: 10px 16px;
@@ -448,7 +582,6 @@ const toggleDetailPanel = () => {
   border-color: #3b82f6;
 }
 
-/* 输入框操作按钮 */
 .input-actions {
   display: flex;
   align-items: center;
@@ -463,7 +596,6 @@ const toggleDetailPanel = () => {
   color: #6b7280;
 }
 
-/* 发送按钮 */
 .send-btn {
   background: #3b82f6 !important;
   color: #fff !important;
@@ -478,7 +610,6 @@ const toggleDetailPanel = () => {
 .image-content {
   cursor: zoom-in;
   max-width: 200px;
-  /* 预览图最大宽度 */
   border-radius: 8px;
   overflow: hidden;
 }
@@ -494,7 +625,6 @@ const toggleDetailPanel = () => {
   transform: scale(1.02);
 }
 
-/* 图片放大预览遮罩层 */
 .image-preview-mask {
   position: fixed;
   top: 0;
@@ -548,13 +678,4 @@ const toggleDetailPanel = () => {
   }
 }
 
-
-.input-area {
-  position: relative;
-  padding: 12px 20px;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 </style>
