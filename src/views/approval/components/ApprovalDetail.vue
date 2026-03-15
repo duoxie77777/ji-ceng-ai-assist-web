@@ -84,11 +84,11 @@ import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UserFilled, ArrowDown } from '@element-plus/icons-vue'
 
-const props = defineProps({ 
+const props = defineProps({
   approval: {
     type: Object,
     required: true
-  } 
+  }
 })
 const emit = defineEmits(['approve'])
 const showAiDetail = ref(true)
@@ -133,15 +133,15 @@ const handleAgree = async () => {
     btn.style.transform = 'scale(0.95)'
     btn.disabled = true
   }
-  
+
   try {
     await new Promise(r => setTimeout(r, 300))
-    
+
     const { value: comment } = await ElMessageBox.prompt(
-      '请输入审批意见（必填）', 
-      '同意审批', 
+      '请输入审批意见（必填）',
+      '同意审批',
       {
-        confirmButtonText: '确认', 
+        confirmButtonText: '确认',
         cancelButtonText: '取消',
         inputValidator: (val) => val.trim() !== '',
         inputErrorMessage: '审批意见不能为空！'
@@ -170,10 +170,10 @@ const handleAgree = async () => {
 const handleReject = async () => {
   try {
     const { value: comment } = await ElMessageBox.prompt(
-      '请输入驳回理由（必填）', 
-      '驳回审批', 
+      '请输入驳回理由（必填）',
+      '驳回审批',
       {
-        confirmButtonText: '确认', 
+        confirmButtonText: '确认',
         cancelButtonText: '取消',
         inputValidator: (val) => val.trim() !== '',
         inputErrorMessage: '驳回理由不能为空！'
@@ -322,6 +322,7 @@ const handleReject = async () => {
     }
   }
 }
+
 .custom-timeline {
   position: relative;
   padding-left: 0;
@@ -346,6 +347,7 @@ const handleReject = async () => {
           font-size: 14px;
           color: var(--gray-600);
         }
+
         .time {
           font-size: 12px;
           color: var(--gray-500);
@@ -371,12 +373,15 @@ const handleReject = async () => {
         &.dot-primary {
           background: var(--blue-500);
         }
+
         &.dot-success {
           background: var(--green-500);
         }
+
         &.dot-warning {
           background: var(--warning-color);
         }
+
         &.dot-danger {
           background: var(--red-500);
         }
@@ -413,12 +418,15 @@ const handleReject = async () => {
           &.tag-primary {
             background: var(--blue-500);
           }
+
           &.tag-success {
             background: var(--green-500);
           }
+
           &.tag-warning {
             background: var(--warning-color);
           }
+
           &.tag-danger {
             background: var(--red-500);
           }

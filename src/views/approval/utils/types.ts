@@ -1,5 +1,4 @@
 import type { UploadFile } from 'element-plus'
-import type { s } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 export type ApprovalStatus = 'in_progress' | 'passed' | 'rejected' | 'draft'
 
@@ -43,13 +42,7 @@ export interface ApprovalItem {
   recordList: any[]
   files: ApprovalFile[]
 }
-export interface ApproverItem {
-  id: number
-  name: string
-  department: string
-  position: string
-  avatar: string
-}
+
 
 export type ApprovalTypeValue = 'expense' | 'leave' | 'purchase' | 'document' | 'other'
 export type UrgencyValue = 'normal' | 'urgent' | 'very_urgent'

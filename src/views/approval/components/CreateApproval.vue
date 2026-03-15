@@ -1,11 +1,5 @@
 <template>
-  <el-form 
-    ref="formRef"
-    :model="form" 
-    :rules="rules" 
-    label-width="100px" 
-    class="create-form"
-  >
+  <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="create-form">
     <el-form-item label="事项类型" prop="type">
       <el-select v-model="form.type" placeholder="请选择">
         <el-option label="民情事项" value="民情事项" />
@@ -32,15 +26,9 @@
       <el-input v-model="form.content" type="textarea" :rows="4" placeholder="请输入内容说明" />
     </el-form-item>
 
-    <!-- 新增文件上传 -->
     <el-form-item label="附件上传">
-      <el-upload
-        v-model:file-list="form.fileList"
-        :auto-upload="false"
-        :on-change="handleFileChange"
-        list-type="text"
-        placeholder="可上传相关附件（选填）"
-      >
+      <el-upload v-model:file-list="form.fileList" :auto-upload="false" :on-change="handleFileChange" list-type="text"
+        placeholder="可上传相关附件（选填）">
         <el-button type="primary" size="small">选择文件</el-button>
       </el-upload>
     </el-form-item>
@@ -55,7 +43,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import type { UploadFile } from 'element-plus'
-import type { an } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const emit = defineEmits(['submit', 'cancel'])
 
@@ -89,11 +76,11 @@ const handleFileChange = (file: UploadFile) => {
 
 // 提交处理
 const submit = () => {
-  formRef.value.validate((valid:any) => {
+  formRef.value.validate((valid: any) => {
     if (valid) {
       const files = form.value.fileList.map(f => ({
         name: f.name,
-        raw: f.raw // 必须保存 raw，否则预览/下载会失效
+        raw: f.raw
       }))
       emit('submit', {
         ...form.value,
@@ -117,7 +104,6 @@ const submit = () => {
   margin-top: 20px;
 }
 
-// 上传组件样式优化
 :deep(.el-upload) {
   .el-upload__input {
     display: none;
@@ -125,7 +111,14 @@ const submit = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

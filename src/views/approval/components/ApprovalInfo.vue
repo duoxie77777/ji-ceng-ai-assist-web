@@ -26,7 +26,6 @@
 </template>
 
 <script setup lang="ts">
-import { Document, View, Download } from '@element-plus/icons-vue'
 import type { ApprovalItem } from '../utils/types'
 import AttachmentFiles from './AttachmentFiles.vue'
 

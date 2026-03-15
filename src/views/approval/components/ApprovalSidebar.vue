@@ -2,17 +2,12 @@
   <div class="approval-sidebar">
     <!-- 顶部搜索 -->
     <div class="search-box">
-      <el-input
-    :model-value="searchKeyword"
-    @input="$emit('update:searchKeyword', $event)"
-    placeholder="搜索事项名称/文号"
-    clearable
-  >
-    <!-- 用 prefix 插槽放自定义图标 -->
-    <template #prefix>
-      <svg-icon name="sousuo" size="28" />
-    </template>
-  </el-input>
+      <el-input :model-value="searchKeyword" @input="$emit('update:searchKeyword', $event)" placeholder="搜索事项名称/文号"
+        clearable>
+        <template #prefix>
+          <svg-icon name="sousuo" size="28" />
+        </template>
+      </el-input>
     </div>
 
     <!-- 分类标签 -->
@@ -61,7 +56,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 
-// 完全保留你原来的 props
 const props = defineProps({
   list: {
     type: Array,
@@ -75,21 +69,18 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // 只加这一个：接收选中项 用于高亮
   selected: {
     type: Object,
     default: null
   }
 })
 
-// 完全保留你原来的 emits
 const emit = defineEmits([
   'update:activeTab',
   'update:searchKeyword',
   'select',
 ])
 
-// 完全保留你原来的所有方法
 const handleTab = (tab) => {
   emit('update:activeTab', tab)
 }
@@ -127,7 +118,6 @@ const filteredList = computed(() => {
 </script>
 
 <style scoped>
-/* 完全保留你原来的所有样式 */
 .approval-sidebar {
   width: 360px;
   height: 100%;
@@ -172,7 +162,6 @@ const filteredList = computed(() => {
   border-bottom: 1px solid var(--el-border-color);
 }
 
-/* 只加这一段高亮样式 其他完全不动 */
 .list-item.active {
   background-color: #e8f3ff;
   border-left: 3px solid #409eff;
