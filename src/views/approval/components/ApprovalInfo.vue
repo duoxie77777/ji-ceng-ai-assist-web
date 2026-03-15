@@ -18,24 +18,9 @@
             </el-descriptions>
         </div>
 
-        <div class="info-section">
-            <h4>文件信息</h4>
-            <div class="file-list">
-                <div v-for="file in approval.files" :key="file.name" class="file-item">
-                    <el-icon>
-                        <Document />
-                    </el-icon>
-                    <span class="file-name">{{ file.name }}</span>
-                    <div class="file-actions">
-                        <el-icon>
-                            <View />
-                        </el-icon>
-                        <el-icon>
-                            <Download />
-                        </el-icon>
-                    </div>
-                </div>
-            </div>
+        <div class="file-section">
+            <h3>文件信息</h3>
+            <AttachmentFiles :files="approval.files" />
         </div>
     </div>
 </template>
@@ -43,6 +28,7 @@
 <script setup lang="ts">
 import { Document, View, Download } from '@element-plus/icons-vue'
 import type { ApprovalItem } from '../utils/types'
+import AttachmentFiles from './AttachmentFiles.vue'
 
 defineProps<{
     approval: ApprovalItem
@@ -51,70 +37,80 @@ defineProps<{
 
 <style scoped lang="less">
 .approval-info {
-  width: 380px;
-  background: var(--white);
-  border-left: 1px solid var(--gray-200);
-  height: 100%;
-  overflow-y: auto;
-  padding: 32px 24px;
-  box-shadow: -2px 0 12px var(--shadow-md);
-
-  .info-section {
-    margin-bottom: 32px;
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gray-900);
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--blue-500);
-    }
-
-    .info-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px dashed var(--gray-200);
-
-      .label {
-        color: var(--gray-600);
-        font-size: 14px;
-      }
-
-      .value {
-        color: var(--gray-900);
-        font-size: 14px;
-        font-weight: 500;
-        text-align: right;
-      }
-    }
-  }
-
-  .create-btn-wrapper {
-    position: sticky;
-    bottom: 0;
+    width: 380px;
     background: var(--white);
-    padding-top: 16px;
-    border-top: 1px solid var(--gray-200);
+    border-left: 1px solid var(--gray-200);
+    height: 100%;
+    overflow-y: auto;
+    padding: 32px 24px;
+    box-shadow: -2px 0 12px var(--shadow-md);
 
-    .el-button {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      border-radius: 8px;
-      background: var(--blue-500);
-      border-color: var(--blue-500);
-      transition: all 0.3s ease;
+    .info-section {
+        margin-bottom: 32px;
 
-      &:hover {
-        background: var(--blue-400);
-        border-color: var(--blue-400);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-blue);
-      }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--blue-500);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--gray-200);
+
+            .label {
+                color: var(--gray-600);
+                font-size: 14px;
+            }
+
+            .value {
+                color: var(--gray-900);
+                font-size: 14px;
+                font-weight: 500;
+                text-align: right;
+            }
+        }
     }
-  }
+
+    .create-btn-wrapper {
+        position: sticky;
+        bottom: 0;
+        background: var(--white);
+        padding-top: 16px;
+        border-top: 1px solid var(--gray-200);
+
+        .el-button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: var(--blue-500);
+            border-color: var(--blue-500);
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: var(--blue-400);
+                border-color: var(--blue-400);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-blue);
+            }
+        }
+    }
+
+    .file-section {
+        margin-top: 20px;
+    }
+
+    .file-section h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
 }
 </style>

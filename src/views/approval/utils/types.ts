@@ -3,6 +3,7 @@ import type { s } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 export type ApprovalStatus = 'in_progress' | 'passed' | 'rejected' | 'draft'
 
+// 审批流程项类型
 export interface ApprovalProcess {
   time: string
   status: string
@@ -21,9 +22,11 @@ export interface ApprovalRecord {
 }
 
 export interface ApprovalFile {
-  name: string
+  name: string,
+  raw?: File
 }
 
+// 审批事项主类型
 export interface ApprovalItem {
   id: string
   title: string
@@ -35,12 +38,11 @@ export interface ApprovalItem {
   docNo: string
   mainSend: string
   ccList: string[]
-  processList: ApprovalProcess[]
-  recordList: ApprovalRecord[]
-  files: ApprovalFile[]
   chargeUsers: string[]
+  processList: ApprovalProcess[]
+  recordList: any[]
+  files: ApprovalFile[]
 }
-
 export interface ApproverItem {
   id: number
   name: string
@@ -57,11 +59,11 @@ export interface CreateApprovalForm {
   urgency: UrgencyValue
   title: string
   content: string
-  approvers: ApproverItem[]
+  approvers: ApprovalItem[]
   ccPersons: number[]
   fileList: UploadFile[]
   approvalNo: string
   status: 'draft' | 'submitted'
 }
 
-export interface PersonItem extends ApproverItem {}
+export interface PersonItem extends ApprovalItem { }

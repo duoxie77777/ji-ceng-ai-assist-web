@@ -10,7 +10,7 @@
           <span class="meta-item">时间: {{ approval.createTime }}</span>
         </div>
       </div>
-      <div class="header-right">
+      <div class="header-right" v-if="approval.status === 'in_progress'">
         <el-button type="primary" size="large" @click="handleAgree">同意</el-button>
         <el-button size="large" @click="handleReject">驳回</el-button>
       </div>
@@ -80,21 +80,28 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { UserFilled, ArrowDown } from '@element-plus/icons-vue'
 
-const props = defineProps({ approval: Object })
+const props = defineProps({ 
+  approval: {
+    type: Object,
+    required: true
+  } 
+})
 const emit = defineEmits(['approve'])
 const showAiDetail = ref(true)
-// 用于格式化时间
+
+// 格式化时间
 const formatDate = (fullTime) => {
-  return fullTime.split(' ')[0]
+  return fullTime?.split(' ')[0] || ''
 }
 const formatTime = (fullTime) => {
-  return fullTime.split(' ')[1]
+  return fullTime?.split(' ')[1] || ''
 }
 
+// AI标签
 const getKeyTags = () => {
   const type = props.approval?.type
   if (type === '民情事项') return ['民生诉求', '基层反馈', '需协调']
@@ -104,6 +111,7 @@ const getKeyTags = () => {
   return ['事项办理']
 }
 
+// AI建议
 const getAiSuggestion = () => {
   const type = props.approval?.type
   if (type === '民情事项') return '建议1个工作日内联系群众核实情况，3个工作日内反馈处理结果。'
@@ -113,41 +121,74 @@ const getAiSuggestion = () => {
   return '请按流程及时处理。'
 }
 
+// 正文内容
 const getContentHtml = () => {
   return props.approval?.processList?.[0]?.comment || '暂无内容'
 }
 
+// 同意审批
 const handleAgree = async () => {
   const btn = document.querySelector('.el-button--primary')
   if (btn) {
     btn.style.transform = 'scale(0.95)'
     btn.disabled = true
   }
-  await new Promise(r => setTimeout(r, 300))
+  
+  try {
+    await new Promise(r => setTimeout(r, 300))
+    
+    const { value: comment } = await ElMessageBox.prompt(
+      '请输入审批意见（必填）', 
+      '同意审批', 
+      {
+        confirmButtonText: '确认', 
+        cancelButtonText: '取消',
+        inputValidator: (val) => val.trim() !== '',
+        inputErrorMessage: '审批意见不能为空！'
+      }
+    )
 
-  ElMessageBox.prompt('请输入审批意见', '同意审批', {
-    confirmButtonText: '确认', cancelButtonText: '取消'
-  }).then(({ value }) => {
-    emit('approve', { id: props.approval.id, result: 'agree', comment: value })
-    ElMessage.success('已同意')
-  }).catch(() => ElMessage.info('已取消'))
-
-  setTimeout(() => {
-    if (btn) {
-      btn.style.transform = 'scale(1)'
-      btn.disabled = false
+    if (comment.trim()) {
+      emit('approve', { id: props.approval.id, result: 'agree', comment: comment.trim() })
+      ElMessage.success('已同意')
+    } else {
+      ElMessage.warning('审批意见不能为空！')
     }
-  }, 800)
+  } catch (error) {
+    ElMessage.info('已取消')
+  } finally {
+    setTimeout(() => {
+      if (btn) {
+        btn.style.transform = 'scale(1)'
+        btn.disabled = false
+      }
+    }, 800)
+  }
 }
 
-const handleReject = () => {
-  ElMessageBox.prompt('请输入驳回理由', '驳回审批', {
-    confirmButtonText: '确认', cancelButtonText: '取消'
-  }).then(({ value }) => {
-    if (!value) return ElMessage.warning('请输入驳回理由')
-    emit('approve', { id: props.approval.id, result: 'reject', comment: value })
-    ElMessage.success('已驳回')
-  }).catch(() => ElMessage.info('已取消'))
+// 驳回审批
+const handleReject = async () => {
+  try {
+    const { value: comment } = await ElMessageBox.prompt(
+      '请输入驳回理由（必填）', 
+      '驳回审批', 
+      {
+        confirmButtonText: '确认', 
+        cancelButtonText: '取消',
+        inputValidator: (val) => val.trim() !== '',
+        inputErrorMessage: '驳回理由不能为空！'
+      }
+    )
+
+    if (comment.trim()) {
+      emit('approve', { id: props.approval.id, result: 'reject', comment: comment.trim() })
+      ElMessage.success('已驳回')
+    } else {
+      ElMessage.warning('驳回理由不能为空！')
+    }
+  } catch (error) {
+    ElMessage.info('已取消')
+  }
 }
 </script>
 
