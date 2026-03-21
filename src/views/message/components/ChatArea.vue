@@ -1,38 +1,43 @@
 <template>
   <div class="chat-area">
+    <!-- 聊天头部：展示联系人信息和操作按钮 -->
     <div class="chat-header">
       <div class="user-info">
         <img :src="activeConversation?.participant.avatar" class="avatar" />
         <div>
-          <h3>{{ activeConversation?.participant.name || '未知联系人' }}</h3>
+          <h3>{{ activeConversation?.participant.name || STATUS_TEXT.UNKNOWN_CONTACT }}</h3>
         </div>
       </div>
       <div class="header-actions">
-          <button @click="toggleDetailPanel"><svg-icon size="26" name="ren" /></button>
+        <button @click="toggleDetailPanel"><svg-icon size="26" name="ren" /></button>
       </div>
     </div>
 
+    <!-- 消息展示容器：按日期分组展示消息列表 -->
     <div class="messages-container" ref="messagesContainer">
       <div v-if="!activeConversation || groupedMessages.length === 0" class="empty-message">
-        暂无聊天记录，开始聊聊吧～
+        {{ STATUS_TEXT.EMPTY_MESSAGE }}
       </div>
 
       <div v-else>
         <div v-for="group in groupedMessages" :key="group.date" class="message-group">
           <div class="date-divider">{{ group.date }}</div>
+          <!-- 单条消息：区分自己/对方，支持文本/文件类型 -->
           <div v-for="msg in group.messages" :key="msg.id" :data-msg-id="msg.id" :class="[
             'message',
             msg.isOwn ? 'own' : 'other',
-            msg.id === chatStore.highlightMsgId ? 'msg-flash' : ''
+            msg.id === chatStore.highlightMsgId ? CSS_CLASS_NAME.MSG_FLASH : ''
           ]">
             <div class="message-bubble">
+
+              <!-- 对方消息显示发送者名称 -->
               <div class="sender-name" v-if="!msg.isOwn">{{ msg.senderName }}</div>
 
-              <div v-if="msg.type === 'text'" class="text-content">
+              <div v-if="msg.type === MESSAGE_TYPE.TEXT" class="text-content">
                 {{ msg.content }}
               </div>
-
-              <div v-if="msg.type === 'file'">
+              <!-- 文件类型消息：区分图片/普通文件 -->
+              <div v-if="msg.type === MESSAGE_TYPE.FILE">
                 <div v-if="msg.fileInfo?.isImage" class="image-content" @click="previewImage(msg.fileInfo.url)">
                   <img :src="msg.fileInfo.url" :alt="msg.fileInfo.name" class="preview-img" loading="lazy" />
                 </div>
@@ -40,16 +45,17 @@
                 <div v-else class="file-content" @click="downloadFile(msg)">
                   <span class="file-icon"><i class="icon">&#xe68f;</i></span>
                   <div class="file-info">
-                    <div class="file-name">{{ msg.fileInfo?.name || '未知文件' }}</div>
+                    <div class="file-name">{{ msg.fileInfo?.name || STATUS_TEXT.UNKNOWN_FILE }}</div>
                     <div class="file-size">{{ formatFileSize(msg.fileInfo?.size || 0) }}</div>
                   </div>
                 </div>
               </div>
 
+              <!-- 消息底部：时间戳 + 已读/未读状态 -->
               <div class="message-footer">
                 <span class="timestamp">{{ formatTime(msg.timestamp) }}</span>
                 <span v-if="msg.isOwn" class="read-status">
-                  {{ msg.isRead ? '✓✓ 已读' : '✓ 未读' }}
+                  {{ msg.isRead ? STATUS_TEXT.READ : STATUS_TEXT.UNREAD }}
                 </span>
               </div>
             </div>
@@ -57,6 +63,8 @@
         </div>
       </div>
     </div>
+
+    <!-- 图片预览遮罩层 -->
     <div v-if="previewImageUrl" class="image-preview-mask" @click="previewImageUrl = ''">
       <img :src="previewImageUrl" alt="预览图片" class="preview-mask-img" @click.stop />
     </div>
@@ -74,17 +82,16 @@
         </div>
       </div>
 
+      <!-- 输入区域：文本输入、文件上传、发送按钮 -->
       <input ref="fileInputRef" type="file" class="file-input" @change="handleFileUpload" accept="*" />
-
-      <input type="text" v-model="newMessage" placeholder="Write your message..." @keyup.enter="sendMessage" />
-      
+      <input type="text" v-model="newMessage" :placeholder="UI_TEXT.MESSAGE_PLACEHOLDER" @keyup.enter="sendMessage" />
       <div class="input-actions">
         <button @click="sendMessage" class="send-btn">
           <svg-icon name="send-message" size="26" />
         </button>
       </div>
-      
-      <div v-if="showEmptyTip" class="empty-tip">发送消息不能为空</div>
+      <!-- 空消息提示 -->
+      <div v-if="showEmptyTip" class="empty-tip">{{ STATUS_TEXT.EMPTY_MESSAGE_TIP }}</div>
     </div>
   </div>
 </template>
@@ -93,41 +100,59 @@
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
 import { useChatStore } from '@/views/message/utils/chatStrore';
 import type { Conversation, Message } from '../utils/chat';
+import {
+  STATUS_TEXT,
+  MESSAGE_TYPE,
+  formatTime,
+  LAYOUT_CONST,
+  CSS_CLASS_NAME,
+  UI_TEXT
+} from '../utils/chat';
 
+// 状态管理
 const chatStore = useChatStore();
+// 新消息输入内容
 const newMessage = ref('');
+// 消息容器DOM引用（用于滚动到底部）
 const messagesContainer = ref<HTMLElement | null>(null);
+// 文件选择器DOM引用
 const fileInputRef = ref<HTMLInputElement | null>(null);
+// 预览图片URL
 const previewImageUrl = ref('');
+// 空消息提示显示状态
 const showEmptyTip = ref(false);
-const highlightMsgId = ref('');
-let highlightTimer: NodeJS.Timeout | null = null;
-let tipTimer: NodeJS.Timeout | null = null;
-
+// 附件菜单显示状态
 const showAttachMenu = ref(false);
+// 附件菜单容器DOM引用（用于点击外部关闭）
 const attachWrapperRef = ref<HTMLElement | null>(null);
 
+// 存储生成的ObjectURL，用于卸载时释放
+const createdFileUrls = ref<string[]>([]);
+
+// 预览图片：打开遮罩层展示大图
 const previewImage = (url: string) => {
   previewImageUrl.value = url;
   document.body.style.overflow = 'hidden';
 };
-
+// 监听图片预览状态：关闭时恢复页面滚动
 watch(previewImageUrl, (val) => {
   if (!val) {
     document.body.style.overflow = 'auto';
   }
 });
-
+// 组件Props：当前激活的会话
 const props = defineProps<{
   activeConversation: Conversation | null;
 }>();
-
+// 组件事件：触发侧边栏切换
 const emit = defineEmits<{
   'toggle-detail': [];
 }>();
 
+// 计算属性：按日期分组后的消息列表
 const groupedMessages = computed(() => chatStore.groupedMessages);
 
+// 监听会话/消息变化：自动滚动到底部
 watch([() => props.activeConversation, () => groupedMessages.value], () => {
   nextTick(() => {
     if (messagesContainer.value) {
@@ -136,29 +161,24 @@ watch([() => props.activeConversation, () => groupedMessages.value], () => {
   });
 }, { immediate: true });
 
-const formatTime = (iso: string) => {
-  const d = new Date(iso);
-  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')} ${d.getHours() >= 12 ? 'pm' : 'am'}`;
-};
 
 const formatFileSize = (bytes: number) => {
   return chatStore.formatFileSize(bytes);
 };
 
+// 发送文本消息：校验内容 -> 调用store发送 -> 清空输入 -> 滚动到底部
 const sendMessage = () => {
   const trimedMsg = newMessage.value.trim();
   if (!trimedMsg) {
     showEmptyTip.value = true;
-    if (tipTimer) clearTimeout(tipTimer);
-    tipTimer = setTimeout(() => {
+    setTimeout(() => {
       showEmptyTip.value = false;
-    }, 3000);
-    return; 
+    }, LAYOUT_CONST.TIP_DISAPPEAR_TIME);
+    return;
   }
   chatStore.sendMessage(trimedMsg);
   newMessage.value = '';
   showEmptyTip.value = false;
-  if (tipTimer) clearTimeout(tipTimer);
 
   nextTick(() => {
     if (messagesContainer.value) {
@@ -167,24 +187,24 @@ const sendMessage = () => {
   });
 };
 
+// 监听输入内容：输入非空时关闭空提示
 watch(newMessage, (val) => {
   if (val.trim() && showEmptyTip.value) {
     showEmptyTip.value = false;
-    if (tipTimer) clearTimeout(tipTimer);
   }
 });
 
+// 切换附件菜单显示/隐藏
 const toggleAttachMenu = () => {
   showAttachMenu.value = !showAttachMenu.value;
 };
 
 const triggerFileInput = () => {
-  if (fileInputRef.value) {
-    fileInputRef.value.click();
-  }
+  fileInputRef.value?.click();
   showAttachMenu.value = false;
 };
 
+// 处理文件上传：获取文件 -> 调用store发送 -> 清空选择框 -> 滚动到底部
 const handleFileUpload = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files && target.files[0]) {
@@ -199,6 +219,7 @@ const handleFileUpload = (e: Event) => {
   }
 };
 
+// 下载文件
 const downloadFile = (msg: Message) => {
   if (!msg.fileInfo || !msg.fileInfo.url) return;
 
@@ -214,27 +235,20 @@ const toggleDetailPanel = () => {
   emit('toggle-detail');
 };
 
+// 滚动到指定消息位置：通过ID/内容定位 -> 平滑滚动 -> 高亮消息
 const scrollToTargetMessage = (conversationId: string, content: string, msgId?: string) => {
   if (chatStore.activeConvId !== conversationId) return;
 
   nextTick(() => {
     if (!messagesContainer.value) return;
 
-    const msgElements = messagesContainer.value.querySelectorAll('.message');
-    let targetElement: HTMLElement | null = null;
-
-    if (msgId) {
-      targetElement = messagesContainer.value.querySelector(`.message[data-msg-id="${msgId}"]`) as HTMLElement;
-    } else {
-      msgElements.forEach(el => {
+    const targetElement = msgId
+      ? messagesContainer.value.querySelector(`.message[data-msg-id="${msgId}"]`) as HTMLElement
+      : Array.from(messagesContainer.value.querySelectorAll('.message')).find(el => {
         const textContent = el.querySelector('.text-content')?.textContent?.trim() || '';
         const fileName = el.querySelector('.file-name')?.textContent?.trim() || '';
-
-        if (textContent === content || fileName === content) {
-          targetElement = el as HTMLElement;
-        }
-      });
-    }
+        return textContent === content || fileName === content;
+      }) as HTMLElement;
 
     if (targetElement) {
       targetElement.scrollIntoView({
@@ -242,12 +256,7 @@ const scrollToTargetMessage = (conversationId: string, content: string, msgId?: 
         block: 'center'
       });
 
-      if (highlightTimer) clearTimeout(highlightTimer);
-      highlightMsgId.value = targetElement.getAttribute('data-msg-id') || '';
-
-      highlightTimer = setTimeout(() => {
-        highlightMsgId.value = '';
-      }, 1000);
+      chatStore.setSingleMsgHighlight(msgId || '');
     }
   });
 };
@@ -258,35 +267,45 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 };
 
-onMounted(() => {
-  const handleScrollToMessage = (e: CustomEvent) => {
-    const { conversationId, content, msgId } = e.detail;
-    scrollToTargetMessage(conversationId, content, msgId);
-  };
+const handleScrollToMessage = (e: CustomEvent) => {
+  const { conversationId, content, msgId } = e.detail;
+  scrollToTargetMessage(conversationId, content, msgId);
+};
 
+onMounted(() => {
   window.addEventListener('scrollToMessage', handleScrollToMessage as EventListener);
   document.addEventListener('click', handleClickOutside);
-
-  onUnmounted(() => {
-    window.removeEventListener('scrollToMessage', handleScrollToMessage as EventListener);
-    document.removeEventListener('click', handleClickOutside);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && previewImageUrl.value) {
+      previewImageUrl.value = '';
+    }
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scrollToMessage', handleScrollToMessage as EventListener);
+  document.removeEventListener('click', handleClickOutside);
+  // 释放所有生成的ObjectURL，避免内存泄漏
+  createdFileUrls.value.forEach(url => {
+    URL.revokeObjectURL(url);
+  });
+  createdFileUrls.value = [];
 });
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .chat-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--white);
   height: 100%;
   min-height: 0;
 }
 
 .chat-header {
   padding: 12px 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--gray-200);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -309,11 +328,17 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  color: var(--gray-900);
 }
 
 .last-seen {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--gray-600);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
 }
 
 .header-actions {
@@ -321,40 +346,45 @@ onMounted(() => {
   gap: 8px;
 }
 
-.header-actions button {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #6b7280;
+.header-actions {
+  button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+  }
 }
 
-/* 消息容器 */
+// 消息容器
 .messages-container {
   flex: 1;
   padding: 16px 20px;
   overflow-y: auto;
-  background: #f9fafb;
+  background: var(--color-bg-page);
 }
 
+// 空状态提示
 .empty-message {
   text-align: center;
   padding: 40px 0;
-  color: #9ca3af;
+  color: var(--color-text-placeholder);
   font-size: 14px;
 }
 
+// 消息分组
 .message-group {
   margin-bottom: 16px;
 }
 
+// 时间分割线
 .date-divider {
   text-align: center;
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--color-text-placeholder);
   margin: 8px 0;
   padding: 4px 0;
-  background: #f3f4f6;
+  background: var(--color-bg-light);
   border-radius: 4px;
 }
 
@@ -376,30 +406,49 @@ onMounted(() => {
   }
 }
 
-.msg-flash .message-bubble {
-  animation: highlightFade 1s ease-out forwards;
-  border: 2px solid #1e40af;
-  background-color: #1e40af !important;
+// 消息高亮闪烁状态
+.msg-flash {
+  & .message-bubble {
+    animation: highlightFade 1s ease-out forwards;
+    border: 2px solid #1e40af !important;
+    background-color: #1e40af !important;
+  }
+
+  & .text-content,
+  & .sender-name,
+  & .timestamp,
+  & .read-status {
+    color: #ffffff !important;
+    font-weight: 600;
+    animation: none !important;
+  }
 }
 
-.msg-flash .text-content,
-.msg-flash .sender-name,
-.msg-flash .timestamp,
-.msg-flash .read-status {
-  color: white !important;
-  font-weight: 600;
-  animation: none !important;
-}
-
+// 消息高亮普通状态（非闪烁）
 .message-highlight {
-  background-color: #fffbeb;
+  background-color: #fffbeb; // 浅黄背景，突出显示
   border-radius: 8px;
   padding: 4px;
 }
 
-.msg-highlight .message-bubble {
-  background-color: #1e40af !important;
-  color: white !important;
+// 基础消息容器样式（适配主题变量）
+.message-container {
+  flex: 1;
+  padding: var(--spacing-md, 16px) var(--spacing-lg, 20px);
+  overflow-y: auto;
+  background: var(--color-bg-page, #f9fafb);
+}
+
+// 消息分组样式
+.message-group {
+  margin-bottom: var(--spacing-lg, 20px);
+
+  & .date-divider {
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-text-placeholder, #9ca3af);
+    margin: 8px 0;
+  }
 }
 
 .msg-highlight.own .message-bubble {
@@ -430,12 +479,12 @@ onMounted(() => {
 }
 
 .message.other .message-bubble {
-  background: #dbeafe;
+  background: var(--blue-200);
   border-bottom-left-radius: 4px;
 }
 
 .message.own .message-bubble {
-  background: #eff6ff;
+  background: var(--blue-50);
   border-bottom-right-radius: 4px;
 }
 
@@ -443,7 +492,7 @@ onMounted(() => {
   font-weight: 600;
   margin-bottom: 4px;
   font-size: 13px;
-  color: #1e40af;
+  color: var(--blue-900);
 }
 
 .message-footer {
@@ -455,12 +504,12 @@ onMounted(() => {
 
 .timestamp {
   font-size: 11px;
-  color: #6b7280;
+  color: var(--gray-600);
 }
 
 .read-status {
   font-size: 10px;
-  color: #6b7280;
+  color: var(--gray-600);
 }
 
 .file-content {
@@ -471,36 +520,42 @@ onMounted(() => {
   padding: 4px 0;
 }
 
+// 文件图标
 .file-icon {
   font-size: 18px;
-  color: #3b82f6;
+  color: var(--blue-500);
 }
 
+// 文件信息容器
 .file-info {
   flex: 1;
 }
 
+// 文件名
 .file-name {
   font-size: 14px;
-  color: #1e40af;
+  color: var(--mint-500);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+// 文件大小
 .file-size {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--gray-600);
 }
 
+// 通用图标
 .icon {
   font-size: 18px;
-  color: #666;
+  color: var(--gray-600);
 }
 
+// 输入区域（聊天底部）
 .input-area {
   padding: 12px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--gray-200);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -511,11 +566,23 @@ onMounted(() => {
   position: relative;
 }
 
+// 文件附件按钮样式（适配主题变量）
+:export {
+  // 基础颜色变量（对应你的全局 theme 变量）
+  --attach-btn-bg: #f3f4f6; // 按钮默认背景色
+  --attach-btn-hover: #e5e7eb; // 按钮 hover 背景色
+  --menu-bg: #fff; // 菜单背景色
+  --menu-shadow: rgba(0, 0, 0, 0.1); // 菜单阴影色
+  --menu-text: #333; // 菜单文字色
+}
+
+// 附件按钮样式
 .attach-btn {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #f3f4f6;
+  // 使用主题背景色变量
+  background-color: var(--attach-btn-bg);
   border: none;
   font-size: 20px;
   cursor: pointer;
@@ -525,22 +592,27 @@ onMounted(() => {
   transition: background-color 0.2s;
 }
 
+// 按钮 hover 样式
 .attach-btn:hover {
-  background: #e5e7eb;
+  // 使用主题 hover 背景色变量
+  background-color: var(--attach-btn-hover);
 }
 
+// 附件菜单容器
 .attach-menu {
   position: absolute;
-  bottom: 42px; 
+  bottom: 42px;
   left: 0;
-  background: #fff;
+  // 使用主题背景色变量
+  background-color: var(--menu-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--menu-shadow);
   padding: 8px 0;
   width: 120px;
   z-index: 100;
 }
 
+// 菜单项样式
 .menu-item {
   display: flex;
   align-items: center;
@@ -548,11 +620,12 @@ onMounted(() => {
   padding: 8px 16px;
   cursor: pointer;
   font-size: 14px;
-  color: #333;
+  // 使用主题文字色变量
+  color: var(--menu-text);
 }
 
 .menu-item:hover {
-  background: #f3f4f6;
+  background: var(--gray-50);
 }
 
 .menu-icon {
@@ -572,14 +645,14 @@ onMounted(() => {
 .input-area input[type="text"] {
   flex: 1;
   padding: 10px 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-200);
   border-radius: 20px;
   font-size: 14px;
   outline: none;
 }
 
 .input-area input[type="text"]:focus {
-  border-color: #3b82f6;
+  border-color: var(--blue-500);
 }
 
 .input-actions {
@@ -588,17 +661,19 @@ onMounted(() => {
   gap: 8px;
 }
 
+// 输入区域动作按钮（如表情、附件等）
 .input-actions button {
   background: none;
   border: none;
   font-size: 16px;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--gray-600);
 }
 
+// 发送按钮（核心样式）
 .send-btn {
-  background: #3b82f6 !important;
-  color: #fff !important;
+  background: var(--blue-500) !important;
+  color: var(--white) !important;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -625,39 +700,25 @@ onMounted(() => {
   transform: scale(1.02);
 }
 
-.image-preview-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
+// 输入区域动作按钮（如表情、附件等）
+.input-actions button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--gray-600);
+}
+
+// 发送按钮（核心样式）
+.send-btn {
+  background: var(--blue-500) !important;
+  color: var(--white) !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  cursor: zoom-out;
-}
-
-.preview-mask-img {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.empty-tip {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  z-index: 10;
-  animation: fadeInOut 3s ease;
 }
 
 @keyframes fadeInOut {
@@ -678,4 +739,24 @@ onMounted(() => {
   }
 }
 
+.image-preview-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.preview-mask-img {
+  max-width: 90%;
+  max-height: 90%;
+  // 关键：保持图片原始宽高比，完整显示
+  object-fit: contain;
+  border-radius: 8px;
+}
 </style>

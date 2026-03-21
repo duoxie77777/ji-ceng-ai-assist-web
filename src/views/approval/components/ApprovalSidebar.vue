@@ -1,6 +1,7 @@
 <template>
+  <!-- 审批侧边栏：包含搜索、分类标签、审批事项列表 -->
   <div class="approval-sidebar">
-    <!-- 顶部搜索 -->
+    <!-- 顶部搜索框：搜索事项名称/文号 -->
     <div class="search-box">
       <el-input :model-value="searchKeyword" @input="$emit('update:searchKeyword', $event)" placeholder="搜索事项名称/文号"
         clearable>
@@ -10,42 +11,27 @@
       </el-input>
     </div>
 
-    <!-- 分类标签 -->
+    <!-- 分类标签栏：切换审批事项分类（进行中/已处理等） -->
     <div class="tab-list">
-      <div class="tab-item" :class="{ active: activeTab === 'all' }" @click="handleTab('all')">
-        全部事项
-      </div>
-      <div class="tab-item" :class="{ active: activeTab === 'in_progress' }" @click="handleTab('in_progress')">
-        办理中
-      </div>
-      <div class="tab-item" :class="{ active: activeTab === 'processed' }" @click="handleTab('processed')">
-        已办理
+      <div class="tab-item" v-for="tab in ApprovalTabConfig" :key="tab.key" :class="{ active: activeTab === tab.key }"
+        @click="handleTab(tab.key)">
+        {{ tab.label }}
       </div>
     </div>
 
-    <!-- 列表 -->
+    <!-- 审批事项列表容器：展示筛选后的审批事项 -->
     <div class="list-container">
       <div v-for="item in filteredList" :key="item.id" class="list-item" :class="{ active: selected?.id === item.id }"
         @click="handleSelect(item)">
         <div class="item-title">{{ item.title }}</div>
         <div class="item-info">
-          <el-tag size="small" type="primary">{{ item.type }}</el-tag>
-          <span class="time">{{ item.createTime }}</span>
+          <el-tag size="small" :type="TagTypeEnum.PRIMARY">{{ item.type }}</el-tag> <span class="time">{{
+            item.createTime
+            }}</span>
         </div>
         <div class="item-status">
-          <el-tag size="small" :type="item.status === 'in_progress'
-            ? 'warning'
-            : item.status === 'passed'
-              ? 'success'
-              : 'danger'
-            ">
-            {{
-              item.status === 'in_progress'
-                ? '办理中'
-                : item.status === 'passed'
-                  ? '已同意'
-                  : '已驳回'
-            }}
+          <el-tag size="small" :type="APPROVAL_STATUS_TAG_TYPE[item.status]">
+            {{ APPROVAL_STATUS_LABEL[item.status] }}
           </el-tag>
         </div>
       </div>
@@ -55,16 +41,22 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import {
+  ApprovalTabConfig,
+  ApprovalStatusEnum,
+  APPROVAL_STATUS_LABEL,
+  APPROVAL_STATUS_TAG_TYPE,
+  TagTypeEnum,
+  ApprovalTabEnum
+} from '../utils/types'
 
+// 接收父组件传递的属性：列表、激活标签、搜索关键词、选中项
 const props = defineProps({
   list: {
     type: Array,
     default: () => [],
   },
-  activeTab: {
-    type: String,
-    default: 'all',
-  },
+  activeTab: { type: String, default: ApprovalTabConfig[0].key },
   searchKeyword: {
     type: String,
     default: '',
@@ -75,35 +67,42 @@ const props = defineProps({
   }
 })
 
+// 定义向外触发的事件：更新标签、更新搜索词、选中事项
 const emit = defineEmits([
   'update:activeTab',
   'update:searchKeyword',
   'select',
 ])
 
+// 切换分类标签：向父组件传递激活的标签值
 const handleTab = (tab) => {
   emit('update:activeTab', tab)
 }
 
+// 处理搜索：向父组件传递搜索关键词
 const handleSearch = (val) => {
   emit('update:searchKeyword', val)
 }
 
+// 选中审批事项：向父组件传递选中的事项对象
 const handleSelect = (item) => {
   emit('select', item)
 }
 
+// 筛选列表：根据激活标签和搜索关键词过滤审批列表
 const filteredList = computed(() => {
   let list = props.list || []
 
-  if (props.activeTab === 'in_progress') {
-    list = list.filter((item) => item.status === 'in_progress')
-  } else if (props.activeTab === 'processed') {
+  // 按审批状态筛选（进行中/已处理）
+  if (props.activeTab === ApprovalStatusEnum.IN_PROGRESS) {
+    list = list.filter((item) => item.status === ApprovalStatusEnum.IN_PROGRESS)
+  } else if (props.activeTab === ApprovalTabEnum.PROCESSED) {
     list = list.filter(
-      (item) => item.status === 'passed' || item.status === 'rejected'
-    )
+      (item) => item.status === ApprovalStatusEnum.PASSED || item.status === ApprovalStatusEnum.REJECTED
+    );
   }
 
+  // 按关键词搜索（标题/文号）
   if (props.searchKeyword) {
     const keyword = props.searchKeyword.toLowerCase()
     list = list.filter(
@@ -117,75 +116,68 @@ const filteredList = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .approval-sidebar {
-  width: 360px;
+  width: 380px;
   height: 100%;
-  border-right: 1px solid var(--el-border-color);
+  border-right: 1px solid var(--gray-200);
   display: flex;
   flex-direction: column;
-  background: #fff;
-}
+  background: var(--white);
 
-.search-box {
-  padding: 16px;
-  border-bottom: 1px solid var(--el-border-color);
-}
+  .search-box {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-100);
+  }
 
-.tab-list {
-  display: flex;
-  padding: 12px 16px;
-  gap: 8px;
-  border-bottom: 1px solid var(--el-border-color);
-}
+  .tab-list {
+    display: flex;
+    padding: 12px 20px;
+    gap: 12px;
+    border-bottom: 1px solid var(--gray-100);
 
-.tab-item {
-  padding: 4px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
+    .tab-item {
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
 
-.tab-item.active {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-}
+      &.active {
+        background: var(--blue-50);
+        color: var(--blue-500);
+      }
 
-.list-container {
-  flex: 1;
-  overflow-y: auto;
-}
+      &:hover:not(.active) {
+        background: var(--gray-100);
+      }
+    }
+  }
 
-.list-item {
-  padding: 16px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--el-border-color);
-}
+  .list-container {
+    flex: 1;
+    overflow-y: auto;
+  }
 
-.list-item.active {
-  background-color: #e8f3ff;
-  border-left: 3px solid #409eff;
-}
+  .list-item {
+    padding: 20px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--gray-100);
 
-.item-title {
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
+    &:hover {
+      background-color: var(--gray-50);
+    }
 
-.item-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
+    &.active {
+      background-color: var(--blue-50);
+      border-left: 3px solid var(--blue-500);
+    }
 
-.time {
-  margin-left: 8px;
-}
+    .item-title {
+      color: var(--gray-900);
+    }
 
-.item-status {
-  margin-top: 8px;
+    .item-info {
+      color: var(--gray-600);
+    }
+  }
 }
 </style>

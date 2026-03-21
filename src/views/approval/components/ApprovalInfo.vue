@@ -1,37 +1,44 @@
 <template>
+    <!-- 审批信息侧边栏：展示审批详情、文件附件 -->
     <div class="approval-info">
-        <div class="info-section">
-            <h4>审批基本信息</h4>
-            <el-descriptions :column="1" border>
-                <el-descriptions-item label="申请编号">{{ approval.id }}</el-descriptions-item>
-                <el-descriptions-item label="项目类型">{{ approval.type }}</el-descriptions-item>
-                <el-descriptions-item label="拟稿人">{{ approval.author }}</el-descriptions-item>
-                <el-descriptions-item label="批文文号">{{ approval.docNo }}</el-descriptions-item>
-            </el-descriptions>
-        </div>
+        <!-- 审批信息分段展示：基本信息/收发信息 -->
+        <template v-for="(section, index) in renderSections" :key="index">
+      <div class="info-section">
+        <h4>{{ section.title }}</h4>
+        <el-descriptions :column="1" border>
+          <el-descriptions-item
+            v-for="item in section.fields"
+            :key="item.prop"
+            :label="item.label"
+          >
+            {{ item.formatter ? item.formatter(approval[item.prop]) : (approval[item.prop] || '-') }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
+    </template>
 
-        <div class="info-section">
-            <h4>收发信息</h4>
-            <el-descriptions :column="1" border>
-                <el-descriptions-item label="主送">{{ approval.mainSend }}</el-descriptions-item>
-                <el-descriptions-item label="分送">{{ approval.ccList.join('、') }}</el-descriptions-item>
-            </el-descriptions>
-        </div>
-
+        <!-- 附件展示区域：渲染上传的附件列表 -->
         <div class="file-section">
             <h3>文件信息</h3>
-            <AttachmentFiles :files="approval.files" />
+            <AttachmentFiles :files="approval.files || []" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type { ApprovalItem } from '../utils/types'
+import type { ApprovalItem, ApprovalFieldConfig } from '../utils/types'
 import AttachmentFiles from './AttachmentFiles.vue'
+import { APPROVAL_INFO_FIELDS, APPROVAL_SEND_FIELDS } from '../utils/types'
 
 defineProps<{
     approval: ApprovalItem
 }>()
+
+// 渲染分段配置：拆分审批信息为不同板块展示
+const renderSections: Array<{ title: string; fields: ApprovalFieldConfig[] }> = [
+  { title: '审批基本信息', fields: APPROVAL_INFO_FIELDS },
+  { title: '收发信息', fields: APPROVAL_SEND_FIELDS },
+]
 </script>
 
 <style scoped lang="less">
@@ -110,6 +117,7 @@ defineProps<{
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 12px;
+        color: var(--gray-900);
     }
 }
 </style>

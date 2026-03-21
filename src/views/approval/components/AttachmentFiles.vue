@@ -1,7 +1,10 @@
 <template>
+    <!-- 附件展示组件：展示文件列表、预览/下载功能 -->
     <div class="attachment-box">
-        <div v-if="!files || files.length === 0" class="empty-tip">暂无附件</div>
+        <!-- 空状态提示：无附件时显示 -->
+        <div v-if="!files || files.length === 0" class="empty-tip">{{ COMMON_TEXT.NO_ATTACHMENT }}</div>
 
+        <!-- 附件列表：遍历展示每个文件及操作按钮 -->
         <div v-for="(file, idx) in files" :key="idx" class="file-item">
             <span class="file-name">{{ file.name }}</span>
             <div class="btns">
@@ -12,19 +15,19 @@
             </div>
         </div>
 
-        <el-dialog v-model="showDialog" title="文件预览" width="85%" top="5vh" append-to-body>
+        <!-- 文件预览弹窗：根据文件类型展示不同预览方式 -->
+        <el-dialog @close="handleDialogClose" v-model="showDialog" title="文件预览" width="85%" top="5vh" append-to-body>
             <div class="preview-body">
-                <!-- 图片 -->
+                <!-- 图片预览：渲染图片 -->
                 <img v-if="isImage" :src="previewUrl" class="preview-img" />
 
-                <!-- Markdown -->
+                <!-- Markdown预览：解析MD并渲染HTML -->
                 <div v-else-if="isMarkdown" class="markdown-preview" v-html="mdContent"></div>
-                <!-- 这部分听说要连接后端，交给你了ദി˶ｰ̀֊ｰ́ )✧ -->
 
-                <!-- 不支持预览的文件 -->
+                <!-- 不支持预览：提示不支持的文件类型 -->
                 <div v-else class="not-support">
                     <svg-icon name="wenjian" size="40" />
-                    <p>该类型文件暂不支持在线预览，请下载后查看</p>
+                    <p>{{COMMON_TEXT.FILE_INVALID_PREVIEW}}</p>
                 </div>
             </div>
         </el-dialog>
@@ -34,7 +37,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { COMMON_TEXT,isValidFile } from '../utils/types'
 
+// 接收父组件传递的文件列表：展示对应的附件
 const props = defineProps({
     files: {
         type: Array,
@@ -42,50 +47,50 @@ const props = defineProps({
     }
 })
 
+// 预览弹窗状态：控制弹窗显示/隐藏
 const showDialog = ref(false)
+// 预览地址：存储文件预览的临时URL
 const previewUrl = ref('')
+// MD内容：存储解析后的Markdown HTML
 const mdContent = ref('')
+// 当前预览文件：记录正在预览的文件
+const previewFile = ref(null)
 
-// 判断是否图片
+// 判断是否为图片文件：用于区分预览类型
 const isImage = (file) => {
-    if (!file?.raw) return false
+    if (!isValidFile(file)) return false
     return file.raw.type.startsWith('image/')
 }
 
-// 判断是否 MD
+// 判断是否为Markdown文件：用于区分预览类型
 const isMarkdown = (file) => {
     if (!file?.name) return false
     return file.name.endsWith('.md') || file.name.endsWith('.markdown')
 }
 
+// 打开预览弹窗
 const openPreview = async (file) => {
-    if (!file || !file.raw) {
-        ElMessage.warning('文件已失效，无法预览')
-        return
+    if (!isValidFile(file)) {
+        ElMessage.warning(COMMON_TEXT.FILE_INVALID_PREVIEW);
+        return;
     }
 
     try {
-        previewUrl.value = URL.createObjectURL(file.raw)
-
-        if (isMarkdown(file)) {
-            const text = await file.raw.text()
-            mdContent.value = parseMarkdown(text)
-        } else {
-            mdContent.value = ''
-        }
-
-        showDialog.value = true
+        previewFile.value = file
+        previewUrl.value = URL.createObjectURL(file.raw);
+        mdContent.value = isMarkdown(file) ? marked.parse(await file.raw.text()) : '';
+        showDialog.value = true;
     } catch (err) {
-        console.error('预览失败:', err)
-        ElMessage.error('预览失败，请检查文件')
+        console.error('预览失败:', err);
+        ElMessage.error(COMMON_TEXT.PREVIEW_FAILED);
     }
-}
+};
 
-// 下载
+// 下载文件
 const download = (file) => {
-    if (!file || !file.raw) {
-        ElMessage.warning('文件已失效，无法下载')
-        return
+    if (!isValidFile(file)) {
+        ElMessage.warning(COMMON_TEXT.FILE_INVALID_DOWNLOAD)
+        return;
     }
     try {
         const a = document.createElement('a')
@@ -95,23 +100,22 @@ const download = (file) => {
         URL.revokeObjectURL(a.href)
     } catch (err) {
         console.error('下载失败:', err)
-        ElMessage.error('下载失败')
+        ElMessage.error(COMMON_TEXT.DOWNLOAD_FAILED || '下载失败')
     }
-}
+};
 
-const parseMarkdown = async (text) => {
-    return text
-        .replace(/\n/g, '<br>')
-        .replace(/### (.*?)(<br>|$)/g, '<h3>$1</h3>')
-        .replace(/## (.*?)(<br>|$)/g, '<h2>$1</h2>')
-        .replace(/# (.*?)(<br>|$)/g, '<h1>$1</h1>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-}
+// 关闭弹窗
+const handleDialogClose = () => {
+    if (previewUrl.value) {
+        URL.revokeObjectURL(previewUrl.value);
+        previewUrl.value = '';
+    }
+    previewFile.value = null;
+    showDialog.value = false;
+};
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .attachment-box {
     padding: 10px 0;
 }
@@ -121,10 +125,15 @@ const parseMarkdown = async (text) => {
     justify-content: space-between;
     align-items: center;
     padding: 10px 12px;
-    border: 1px solid #eee;
+    border: 1px solid var(--gray-200);
     border-radius: 6px;
     margin-bottom: 8px;
-    background: #fafafa;
+    background: var(--white);
+
+    &:hover {
+        border-color: var(--blue-300);
+        box-shadow: var(--shadow-sm);
+    }
 }
 
 .file-name {
@@ -138,7 +147,8 @@ const parseMarkdown = async (text) => {
 }
 
 .empty-tip {
-    color: #999;
+    color: var(--gray-500);
+    background: var(--gray-50);
     font-size: 13px;
     padding: 10px;
 }
@@ -178,15 +188,15 @@ const parseMarkdown = async (text) => {
 }
 
 .markdown-preview strong {
-    color: #333;
+    color: var(--gray-800);
 }
 
 .markdown-preview em {
-    color: #666;
+    color: var(--gray-600);
 }
 
 .markdown-preview pre {
-    background: #f6f6f6;
+    background: var(--gray-100);
     padding: 12px;
     border-radius: 6px;
     overflow-x: auto;
@@ -195,7 +205,7 @@ const parseMarkdown = async (text) => {
 .not-support {
     text-align: center;
     padding: 60px 20px;
-    color: #666;
+    color: var(--gray-600);
 }
 
 .not-support svg-icon {

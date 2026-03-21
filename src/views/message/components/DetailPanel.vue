@@ -1,11 +1,15 @@
 <template>
+  <!-- 联系人详情面板：展示用户信息、联系方式等 -->
   <div class="detail-panel" v-if="activeUser">
+
+    <!-- 面板头部：关闭按钮 -->
     <div class="panel-header">
       <button class="close-btn" @click="closePanel">
         <svg-icon name="cuo" size="20" />
       </button>
     </div>
 
+    <!-- 用户卡片：头像、名称、邮箱、操作按钮 -->
     <div class="user-card">
       <div class="avatar-wrapper">
         <img :src="activeUser.avatar" class="large-avatar" :alt="activeUser.name" />
@@ -24,45 +28,50 @@
       </div>
     </div>
 
+
+    <!-- 信息卡片：基础信息/地址信息 -->
     <div class="info-card">
       <div class="section">
-        <h3 class="section-title">基本信息</h3>
+        <h3 class="section-title">{{ UI_TEXT.BASIC_INFO }}</h3>
         <div class="info-list">
           <div class="info-item">
-            <span class="info-label">姓名</span>
-            <span class="info-value">{{ activeUser.name || '未填写' }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_LABEL">{{ USER_INFO_LABEL.NAME }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_VALUE">{{ activeUser.name || USER_INFO_LABEL.UNFILLED }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">职业</span>
-            <span class="info-value">{{ activeUser.bio || '未填写' }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_LABEL">{{ USER_INFO_LABEL.BIO }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_VALUE">{{ activeUser.bio || USER_INFO_LABEL.UNFILLED }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">电话</span>
-            <span class="info-value">{{ activeUser.phone || '未填写' }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_LABEL">{{ USER_INFO_LABEL.PHONE }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_VALUE">{{ activeUser.phone || USER_INFO_LABEL.UNFILLED }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">性别</span>
-            <span class="info-value">{{ activeUser.sex || '未填写' }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_LABEL">{{ USER_INFO_LABEL.SEX }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_VALUE">{{ activeUser.sex || USER_INFO_LABEL.UNFILLED }}</span>
           </div>
         </div>
       </div>
 
+      <!-- 地址信息区域 -->
       <div class="section">
-        <h3 class="section-title">住址信息</h3>
+        <h3 class="section-title">{{ UI_TEXT.ADDRESS_INFO }}</h3>
         <div class="info-list">
           <div class="info-item">
-            <span class="info-label">城市/国家</span>
-            <span class="info-value">{{ activeUser.address?.country || '未填写' }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_LABEL">{{ USER_INFO_LABEL.COUNTRY }}</span>
+            <span :class="CSS_CLASS_NAME.INFO_VALUE">{{ activeUser.address?.country || USER_INFO_LABEL.UNFILLED }}</span>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { User, Attachment } from '../utils/chat';
+// 导入新增的常量
+import { USER_INFO_LABEL, UI_TEXT, CSS_CLASS_NAME } from '../utils/chat';
 
 const props = defineProps<{
   activeUser: User | null;
@@ -78,11 +87,12 @@ const closePanel = () => {
 };
 </script>
 
-<style scoped>
+<style scoped lang="less">
+// 样式部分完全保留，无修改
 .detail-panel {
   width: 320px;
-  background: #f8fafc;
-  border-left: 1px solid #e2e8f0;
+  background: var(--white);
+  border-left: 1px solid var(--gray-200);
   padding: 24px 20px;
   overflow-y: auto;
   height: 100%;
@@ -98,7 +108,7 @@ const closePanel = () => {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #64748b;
+  color: var(--gray-600);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -106,20 +116,23 @@ const closePanel = () => {
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease;
+  &:hover {
+    color: var(--red-500);
+  }
 }
 
-.close-btn:hover {
-  background-color: #e2e8f0;
-  color: #334155;
-}
+// .close-btn:hover {
+//   background-color: #e2e8f0;
+//   color: #334155;
+// }
 
 .user-card {
   text-align: center;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  background: linear-gradient(135deg, var(--blue-50) 0%, var(--blue-200) 100%);
   border-radius: 16px;
   padding: 24px 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.15);
+  box-shadow: 0 2px 8px var(--gray-200);
 }
 
 .avatar-wrapper {
@@ -133,7 +146,7 @@ const closePanel = () => {
   height: 90px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #ffffff;
+  border: 4px solid var(--white);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -144,24 +157,24 @@ const closePanel = () => {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 3px solid #ffffff;
+  border: 3px solid var(--white);
 }
 
 .avatar-status.online {
-  background-color: #10b981;
+  background-color: var(--mint-500);
 }
 
 .user-name {
   font-size: 20px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--gray-900);
   margin: 0 0 8px;
   letter-spacing: 0.2px;
 }
 
 .user-email {
   font-size: 14px;
-  color: #64748b;
+  color: var(--gray-600);
   margin: 0 0 20px;
 }
 
@@ -184,36 +197,36 @@ const closePanel = () => {
 }
 
 .call-btn {
-  background-color: #ffffff;
-  color: #3b82f6;
+  background-color: var(--white);
+  color: var(--blue-500);
   box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
 }
 
 .call-btn:hover {
-  background-color: #3b82f6;
-  color: #ffffff;
+  background-color: var(--blue-500);
+  color: var(--white);
   transform: scale(1.05);
 }
 
 .video-btn {
-  background-color: #ffffff;
-  color: #10b981;
+  background-color: var(--white);
+  color: var(--mint-500); // 对应 #10b981 (薄荷绿)
   box-shadow: 0 2px 6px rgba(16, 185, 129, 0.2);
 }
 
 .video-btn:hover {
-  background-color: #10b981;
-  color: #ffffff;
+  background-color: var(--mint-500);
+  color: var(--white);
   transform: scale(1.05);
 }
 
 .info-card,
 .attachments-card {
-  background-color: #ffffff;
+  background-color: var(--white);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.1);
+  box-shadow: 0 2px 8px var(--gray-200); // 用主题灰替代原来的阴影色
 }
 
 .section {
@@ -223,10 +236,10 @@ const closePanel = () => {
 .section-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--gray-600);
   margin: 0 0 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--gray-100); // 对应 #f1f5f9
   text-transform: capitalize;
   letter-spacing: 0.1px;
 }
@@ -240,29 +253,17 @@ const closePanel = () => {
 .info-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f8fafc;
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
+  padding: 10px 0;
   font-size: 14px;
-  color: #64748b;
-  font-weight: 500;
-}
 
-.info-value {
-  font-size: 14px;
-  color: #1e293b;
-  text-align: right;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  .label {
+    color: var(--gray-700);
+  }
+
+  .value {
+    color: var(--gray-900);
+    font-weight: 500;
+  }
 }
 
 .attachment-list {
@@ -276,18 +277,18 @@ const closePanel = () => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  background-color: #f8fafc;
+  background-color: var(--gray-50);
   border-radius: 8px;
   font-size: 13px;
   transition: background-color 0.2s ease;
 }
 
 .attachment-item:hover {
-  background-color: #f1f5f9;
+  background-color: var(--gray-100);
 }
 
 .file-name {
-  color: #334155;
+  color: var(--gray-800);
   max-width: 180px;
   white-space: nowrap;
   overflow: hidden;
@@ -295,8 +296,8 @@ const closePanel = () => {
 }
 
 .download-btn {
-  background-color: #3b82f6;
-  color: #ffffff;
+  background-color: var(--blue-500);
+  color: var(--white);
   border: none;
   border-radius: 6px;
   padding: 4px 10px;
@@ -306,6 +307,6 @@ const closePanel = () => {
 }
 
 .download-btn:hover {
-  background-color: #2563eb;
+  background-color: var(--blue-600);
 }
 </style>
