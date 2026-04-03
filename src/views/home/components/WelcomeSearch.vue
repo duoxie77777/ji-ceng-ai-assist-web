@@ -1,5 +1,5 @@
 <template>
-  <div class="welcome-card glass-card">
+  <div class="welcome-card">
     <h1>欢迎使用工作台</h1>
     <div class="search-container">
       <el-input v-model="search" placeholder="请输入您想搜索的内容" :prefix-icon="Search" clearable @keyup.enter="handleSearch" />
@@ -35,11 +35,14 @@ const searchTag = (tag: string) => {
 <style scoped>
 .welcome-card {
   padding: 20px 24px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
 }
 
 h1 {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   color: var(--gray-900);
   margin: 0 0 16px 0;
 }
@@ -49,18 +52,22 @@ h1 {
 }
 
 .search-container :deep(.el-input__wrapper) {
-  border-radius: 40px;
+  border-radius: 6px;
   background: var(--white);
-  padding: 8px 16px;
+  padding: 6px 12px;
   box-shadow: 0 0 0 1px var(--gray-200) inset;
 }
 
 .search-container :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--gray-300) inset;
+}
+
+.search-container :deep(.el-input__wrapper.is-focus) {
   box-shadow: 0 0 0 1px var(--blue-500) inset;
 }
 
 .search-tip {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-600);
   display: flex;
   align-items: center;
@@ -69,15 +76,16 @@ h1 {
 }
 
 .search-tip a {
-  color: var(--blue-500);
+  color: var(--gray-700);
   text-decoration: none;
-  padding: 4px 12px;
-  background: rgba(51, 112, 255, 0.1);
-  border-radius: 20px;
+  padding: 3px 10px;
+  background: var(--gray-100);
+  border-radius: 4px;
   transition: background 0.2s;
 }
 
 .search-tip a:hover {
-  background: rgba(51, 112, 255, 0.2);
+  background: var(--gray-200);
+  color: var(--blue-500);
 }
 </style>

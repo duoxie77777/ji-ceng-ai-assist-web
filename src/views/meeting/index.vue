@@ -196,16 +196,15 @@ const showRecordings = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--gray-50);
+  background: var(--white);
   overflow: hidden;
 }
 
-// 顶部操作栏
 .meeting-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 32px;
+  padding: 16px 24px;
   background: var(--white);
   border-bottom: 1px solid var(--gray-200);
 
@@ -213,9 +212,9 @@ const showRecordings = () => {
     .page-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       margin: 0;
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 600;
       color: var(--gray-900);
 
@@ -223,40 +222,36 @@ const showRecordings = () => {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
         background: var(--blue-500);
         color: white;
-        font-size: 20px;
+        font-size: 16px;
       }
     }
   }
 
-  // 核心操作卡片 - 更加突出
   .header-actions {
     display: flex;
-    gap: 16px;
+    gap: 12px;
 
     .action-card {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 16px 24px;
-      border-radius: 12px;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.25s ease;
-      min-width: 200px;
+      transition: all 0.2s ease;
+      min-width: 160px;
 
       &.create {
         background: var(--blue-500);
         color: white;
-        box-shadow: 0 4px 12px rgba(51, 112, 255, 0.3);
 
         &:hover {
           background: var(--blue-600);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(51, 112, 255, 0.4);
         }
 
         .action-icon {
@@ -270,18 +265,17 @@ const showRecordings = () => {
 
       &.join {
         background: var(--white);
-        border: 2px solid var(--blue-500);
-        color: var(--blue-500);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
 
         &:hover {
-          background: var(--blue-50);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(51, 112, 255, 0.15);
+          border-color: var(--blue-500);
+          color: var(--blue-500);
         }
 
         .action-icon {
-          background: var(--blue-100);
-          color: var(--blue-500);
+          background: var(--gray-100);
+          color: var(--gray-600);
         }
 
         .action-title {
@@ -297,10 +291,10 @@ const showRecordings = () => {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        font-size: 22px;
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        font-size: 18px;
       }
 
       .action-info {
@@ -309,8 +303,8 @@ const showRecordings = () => {
         gap: 2px;
 
         .action-title {
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 14px;
+          font-weight: 500;
         }
 
         .action-desc {
@@ -321,21 +315,19 @@ const showRecordings = () => {
   }
 }
 
-// 主体内容
 .meeting-body {
   flex: 1;
   display: flex;
-  padding: 24px;
-  gap: 24px;
+  padding: 20px;
+  gap: 20px;
   overflow: hidden;
 }
 
-// 左侧主区域
 .meeting-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   overflow: hidden;
 }
 </style>

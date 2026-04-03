@@ -1,5 +1,5 @@
 <template>
-  <div class="enforcement-card glass-card">
+  <div class="enforcement-card">
     <div class="stat-section">
       <div class="section-header">
         <span class="header-dot"></span>
@@ -44,14 +44,12 @@ const completedCount = computed(() => approvalStore.completedCount)
 <style scoped>
 .enforcement-card {
   padding: 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .stat-section {
@@ -61,20 +59,20 @@ const completedCount = computed(() => approvalStore.completedCount)
 .section-header {
   display: flex;
   align-items: baseline;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .header-dot {
-  width: 4px;
-  height: 18px;
+  width: 3px;
+  height: 16px;
   background: var(--blue-500);
   border-radius: 2px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: var(--gray-900);
@@ -95,22 +93,23 @@ h3 {
 .stat-block {
   flex: 1;
   text-align: center;
-  background: linear-gradient(135deg, var(--white), var(--gray-50));
-  border-radius: 16px;
-  padding: 20px 12px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 16px 12px;
+  border: 1px solid var(--gray-100);
 }
 
 .stat-number {
-  font-size: 42px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 600;
   color: var(--blue-500);
   line-height: 1;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-600);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .stat-section:last-child .stat-number {

@@ -90,57 +90,32 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--blue-500) 0%, var(--purple-500) 100%);
-  position: relative;
-  overflow: hidden;
-
-  // 添加装饰性背景元素
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  &::before {
-    width: 600px;
-    height: 600px;
-    top: -200px;
-    right: -200px;
-  }
-
-  &::after {
-    width: 400px;
-    height: 400px;
-    bottom: -150px;
-    left: -150px;
-  }
+  background: var(--gray-50);
 }
 
 .login-card {
-  width: 420px;
-  padding: 48px 40px;
+  width: 400px;
+  padding: 40px;
   background: var(--white);
-  border-radius: 16px;
-  box-shadow: var(--shadow-login);
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
   position: relative;
   z-index: 1;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 
   h1 {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--gray-900);
-    margin: 0 0 8px 0;
+    margin: 0 0 6px 0;
   }
 
   p {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--gray-500);
     margin: 0;
   }
@@ -148,33 +123,31 @@ const handleLogin = async () => {
 
 .login-form {
   .form-item {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 
     label {
       display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--gray-900);
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gray-700);
     }
 
     input {
       width: 100%;
-      height: 44px;
-      padding: 0 16px;
-      border: 1px solid var(--gray-200);
-      border-radius: 8px;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
       font-size: 14px;
       box-sizing: border-box;
       transition: all 0.2s;
-      background: var(--gray-50);
+      background: var(--white);
       color: var(--gray-900);
 
       &:focus {
         outline: none;
         border-color: var(--blue-500);
-        background: var(--white);
-        box-shadow: var(--shadow-focus);
       }
 
       &::placeholder {
@@ -185,25 +158,19 @@ const handleLogin = async () => {
 
   .login-btn {
     width: 100%;
-    height: 44px;
+    height: 40px;
     margin-top: 8px;
     background: var(--blue-500);
     color: var(--white);
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: 6px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover:not(:disabled) {
-      background: var(--blue-400);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-blue-lg);
-    }
-
-    &:active:not(:disabled) {
-      transform: translateY(0);
+      background: var(--blue-600);
     }
 
     &:disabled {
@@ -213,8 +180,8 @@ const handleLogin = async () => {
   }
 
   .login-tip {
-    margin-top: 24px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--gray-200);
     text-align: center;
 

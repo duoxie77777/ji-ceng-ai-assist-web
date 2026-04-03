@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-card glass-card">
+  <div class="chart-card">
     <div class="card-header">
       <span class="header-dot"></span>
       <h3>民情事项受理趋势</h3>
@@ -103,11 +103,9 @@ onUnmounted(() => {
 <style scoped>
 .chart-card {
   padding: 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
 }
 
 .card-header {
@@ -117,23 +115,23 @@ onUnmounted(() => {
 }
 
 .header-dot {
-  width: 4px;
-  height: 18px;
-  background: #3b82f6;
+  width: 3px;
+  height: 16px;
+  background: var(--blue-500);
   border-radius: 2px;
   margin-right: 8px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
-  color: #1e293b;
+  color: var(--gray-900);
 }
 
 .date-range {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--gray-500);
   margin-left: auto;
 }
 
@@ -152,7 +150,7 @@ h3 {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #64748b;
+  color: var(--gray-600);
 }
 
 .legend-dot {

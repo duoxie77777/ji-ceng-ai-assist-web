@@ -120,82 +120,80 @@ const handleApprove = async (type: ApprovalActionEnum) => {
 <style scoped lang="less">
 .approval-detail {
   flex: 1;
-  padding: 40px;
-  background: var(--gray-50);
+  padding: 24px;
+  background: var(--white);
   overflow-y: auto;
 
   .detail-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding-bottom: 24px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--gray-200);
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 
     .detail-title {
-      font-size: 28px;
-      font-weight: 700;
+      font-size: 20px;
+      font-weight: 600;
       color: var(--gray-900);
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .detail-meta {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       flex-wrap: wrap;
 
       .tag-type-民情事项 {
-        color: var(--purple-500);
-        background: var(--blue-50);
-        border-color: var(--blue-200);
+        color: var(--gray-700);
+        background: var(--gray-100);
+        border-color: var(--gray-200);
       }
 
       .tag-type-农业农村 {
-        color: var(--green-500);
-        background: var(--green-50);
-        border-color: var(--green-50);
+        color: var(--gray-700);
+        background: var(--gray-100);
+        border-color: var(--gray-200);
       }
 
       .tag-type-民政服务 {
-        color: var(--mint-500);
-        background: var(--mint-50);
-        border-color: var(--mint-200);
+        color: var(--gray-700);
+        background: var(--gray-100);
+        border-color: var(--gray-200);
       }
 
       .tag-type-综治平安 {
-        color: var(--red-500);
-        background: var(--red-50);
-        border-color: var(--red-50);
+        color: var(--gray-700);
+        background: var(--gray-100);
+        border-color: var(--gray-200);
       }
 
       .meta-item {
-        font-size: 15px;
+        font-size: 13px;
         color: var(--gray-600);
       }
     }
 
     .header-right {
       display: flex;
-      gap: 12px;
+      gap: 10px;
     }
 
     .el-button {
-      padding: 12px 24px;
-      font-size: 15px;
-      font-weight: 500;
-      border-radius: 8px;
-      transition: all 0.3s ease;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 400;
+      border-radius: 6px;
+      transition: all 0.2s ease;
 
       &--primary {
         background: var(--blue-500);
         border-color: var(--blue-500);
 
         &:hover {
-          background: var(--blue-400);
-          border-color: var(--blue-400);
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-blue);
+          background: var(--blue-600);
+          border-color: var(--blue-600);
         }
       }
 
@@ -206,15 +204,12 @@ const handleApprove = async (type: ApprovalActionEnum) => {
         &:hover {
           background: var(--red-600);
           border-color: var(--red-600);
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
         }
       }
 
       &--default {
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
+          border-color: var(--gray-400);
         }
       }
     }
@@ -224,26 +219,20 @@ const handleApprove = async (type: ApprovalActionEnum) => {
   .content-section,
   .process-section {
     background: var(--white);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow-md);
-    transition: all 0.3s ease;
-
-    &:hover {
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--gray-200);
 
     .card-title,
     .section-title {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--gray-900);
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
   }
 }
@@ -255,34 +244,34 @@ const handleApprove = async (type: ApprovalActionEnum) => {
 
   .timeline-item {
     display: flex;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     position: relative;
 
     .timeline-left {
-      width: 120px;
+      width: 100px;
       flex-shrink: 0;
-      padding-right: 16px;
+      padding-right: 12px;
       text-align: right;
 
       .timeline-time {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 2px;
 
         .date {
-          font-size: 14px;
+          font-size: 13px;
           color: var(--gray-600);
         }
 
         .time {
-          font-size: 12px;
+          font-size: 11px;
           color: var(--gray-500);
         }
       }
     }
 
     .timeline-center {
-      width: 20px;
+      width: 16px;
       flex-shrink: 0;
       position: relative;
       display: flex;
@@ -290,8 +279,8 @@ const handleApprove = async (type: ApprovalActionEnum) => {
       align-items: center;
 
       .timeline-dot {
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
         background: var(--gray-300);
         z-index: 2;
@@ -318,7 +307,7 @@ const handleApprove = async (type: ApprovalActionEnum) => {
         height: 100%;
         background: var(--gray-200);
         position: absolute;
-        top: 12px;
+        top: 10px;
         z-index: 1;
       }
     }
@@ -327,19 +316,18 @@ const handleApprove = async (type: ApprovalActionEnum) => {
       flex: 1;
 
       .timeline-content {
-        background: var(--white);
-        border-left: 4px solid var(--gray-300);
-        box-shadow: var(--shadow-sm);
-        padding: 12px 16px;
+        background: var(--gray-50);
+        border-left: 3px solid var(--gray-300);
+        padding: 10px 12px;
 
         .status-tag {
           display: inline-block;
-          padding: 4px 12px;
+          padding: 3px 10px;
           border-radius: 4px;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 500;
           color: var(--white);
-          margin-bottom: 8px;
+          margin-bottom: 6px;
 
           &.tag-primary {
             background: var(--blue-500);
@@ -359,13 +347,13 @@ const handleApprove = async (type: ApprovalActionEnum) => {
         }
 
         .handler {
-          font-size: 14px;
+          font-size: 13px;
           color: var(--gray-700);
-          margin-bottom: 4px;
+          margin-bottom: 3px;
         }
 
         .comment {
-          font-size: 13px;
+          font-size: 12px;
           color: var(--gray-600);
           line-height: 1.5;
         }

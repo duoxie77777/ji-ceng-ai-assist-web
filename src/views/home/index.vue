@@ -67,7 +67,7 @@ onMounted(() => {
 .workbench-container {
   width: 100%;
   padding: 20px;
-  background: linear-gradient(180deg, var(--blue-50) 0%, #f0f7ff 100%);
+  background: var(--white);
   min-height: calc(100vh - 60px);
 }
 

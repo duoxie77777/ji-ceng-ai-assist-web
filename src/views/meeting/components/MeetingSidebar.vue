@@ -146,31 +146,31 @@ const getStatusLabel = (status: string) => {
 
 <style scoped lang="less">
 .meeting-sidebar {
-  width: 320px;
+  width: 300px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   overflow-y: auto;
 
   .sidebar-section {
     background: var(--white);
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid var(--gray-200);
-    padding: 16px;
+    padding: 14px;
 
     .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
 
       h3 {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         margin: 0;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         color: var(--gray-800);
       }
@@ -181,14 +181,14 @@ const getStatusLabel = (status: string) => {
     .upcoming-list {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
 
       .upcoming-card {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px;
-        border-radius: 10px;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 6px;
         background: var(--gray-50);
         transition: all 0.2s ease;
 
@@ -203,15 +203,15 @@ const getStatusLabel = (status: string) => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 6px 10px;
+          padding: 4px 8px;
           background: var(--white);
-          border-radius: 8px;
-          min-width: 54px;
+          border-radius: 6px;
+          min-width: 48px;
 
           .countdown-value {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--blue-500);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-800);
           }
 
           .countdown-label {
@@ -225,7 +225,7 @@ const getStatusLabel = (status: string) => {
           min-width: 0;
 
           .meeting-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             color: var(--gray-800);
             white-space: nowrap;
@@ -236,8 +236,8 @@ const getStatusLabel = (status: string) => {
 
           .meeting-meta {
             display: flex;
-            gap: 12px;
-            font-size: 12px;
+            gap: 10px;
+            font-size: 11px;
             color: var(--gray-500);
 
             span {
@@ -259,9 +259,9 @@ const getStatusLabel = (status: string) => {
       .recent-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px;
-        border-radius: 8px;
+        gap: 10px;
+        padding: 8px;
+        border-radius: 6px;
         cursor: pointer;
         transition: all 0.2s ease;
 
@@ -271,19 +271,19 @@ const getStatusLabel = (status: string) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
-          font-size: 16px;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          font-size: 14px;
 
           &.normal {
-            background: var(--blue-100);
-            color: var(--blue-500);
+            background: var(--gray-100);
+            color: var(--gray-600);
           }
 
           &.important {
-            background: var(--red-50);
-            color: var(--red-500);
+            background: var(--gray-100);
+            color: var(--gray-600);
           }
         }
 
@@ -292,7 +292,7 @@ const getStatusLabel = (status: string) => {
           min-width: 0;
 
           .item-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--gray-800);
             white-space: nowrap;
@@ -303,7 +303,7 @@ const getStatusLabel = (status: string) => {
           .item-meta {
             display: flex;
             gap: 8px;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--gray-500);
 
             span::after {
@@ -316,9 +316,9 @@ const getStatusLabel = (status: string) => {
         }
 
         .item-status {
-          font-size: 11px;
-          padding: 3px 8px;
-          border-radius: 10px;
+          font-size: 10px;
+          padding: 2px 6px;
+          border-radius: 4px;
 
           &.completed {
             background: var(--gray-100);
@@ -338,56 +338,55 @@ const getStatusLabel = (status: string) => {
     .action-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
 
       .action-item {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        padding: 14px;
-        border-radius: 10px;
+        gap: 6px;
+        padding: 12px;
+        border-radius: 6px;
         background: var(--gray-50);
         cursor: pointer;
         transition: all 0.2s ease;
 
         &:hover {
           background: var(--gray-100);
-          transform: translateY(-2px);
         }
 
         .action-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          font-size: 18px;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          font-size: 16px;
 
           &.schedule {
-            background: var(--blue-100);
-            color: var(--blue-500);
+            background: var(--gray-200);
+            color: var(--gray-700);
           }
 
           &.instant {
-            background: var(--green-50);
-            color: var(--green-500);
+            background: var(--gray-200);
+            color: var(--gray-700);
           }
 
           &.join {
-            background: rgba(94, 76, 175, 0.1);
-            color: var(--purple-500);
+            background: var(--gray-200);
+            color: var(--gray-700);
           }
 
           &.record {
-            background: var(--red-50);
-            color: var(--red-500);
+            background: var(--gray-200);
+            color: var(--gray-700);
           }
         }
 
         span {
-          font-size: 13px;
+          font-size: 12px;
           color: var(--gray-700);
         }
       }

@@ -114,49 +114,45 @@ onMounted(() => {
 <style scoped lang="scss">
 .personal-center {
   min-height: 100vh;
-  background: var(--gray-50);
+  background: var(--white);
 }
 
 .page-header-simple {
-  background: linear-gradient(135deg, var(--blue-700), var(--blue-500));
-  padding: 32px 40px;
-  margin-bottom: 24px;
+  background: var(--white);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-200);
 
   .header-content {
-    max-width: 1400px;
-    margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
 
     .avatar {
-      border: 3px solid white;
-      box-shadow: var(--shadow-md);
+      border: 1px solid var(--gray-200);
     }
 
     .welcome h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-      color: white;
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gray-900);
     }
 
     .welcome p {
       margin: 0;
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.85);
+      font-size: 13px;
+      color: var(--gray-500);
     }
   }
 }
 
 .main-layout {
   display: flex;
-  padding: 0 24px 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-  gap: 24px;
+  padding: 16px;
+  gap: 16px;
 
   .sidebar {
-    width: 280px;
+    width: 200px;
     flex-shrink: 0;
   }
 
@@ -164,18 +160,18 @@ onMounted(() => {
     flex: 1;
 
     .page-header {
-      margin-bottom: 20px;
+      margin-bottom: 12px;
 
       h2 {
-        font-size: 24px;
+        font-size: 15px;
         font-weight: 600;
         color: var(--gray-800);
-        margin: 0 0 4px;
+        margin: 0 0 3px;
       }
 
       .page-desc {
-        font-size: 14px;
-        color: var(--gray-600);
+        font-size: 12px;
+        color: var(--gray-500);
       }
     }
   }

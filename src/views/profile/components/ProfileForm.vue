@@ -76,9 +76,9 @@ const enterEditMode = () => { isEditing.value = true }
 <style scoped lang="scss">
 .profile-form {
   .info-card {
-    border-radius: 24px;
+    border-radius: 8px;
     background: var(--white);
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
   }
 
   .card-header {
@@ -90,7 +90,7 @@ const enterEditMode = () => { isEditing.value = true }
   }
 
   :deep(.el-input__wrapper) {
-    border-radius: 12px;
+    border-radius: 6px;
   }
 }
 </style>

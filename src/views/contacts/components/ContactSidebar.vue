@@ -73,11 +73,10 @@ const quickEntries = [
 
 <style scoped lang="scss">
 .sidebar {
-  width: 280px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  width: 260px;
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -88,41 +87,41 @@ const quickEntries = [
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 24px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  border-bottom: 1px solid var(--gray-100);
 
   .user-detail {
     .user-name {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--blue-700);
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--gray-900);
     }
 
     .user-status {
-      font-size: 13px;
-      color: var(--blue-500);
+      font-size: 12px;
+      color: var(--gray-500);
     }
   }
 }
 
 .menu-list {
-  padding: 12px 12px;
+  padding: 12px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 12px;
   margin-bottom: 4px;
-  border-radius: 32px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--gray-700);
-  font-size: 15px;
+  font-size: 14px;
 
   .el-icon {
-    font-size: 20px;
-    margin-right: 12px;
+    font-size: 18px;
+    margin-right: 10px;
   }
 
   .menu-label {
@@ -135,74 +134,71 @@ const quickEntries = [
     :deep(.el-badge__content) {
       background-color: var(--blue-500);
       border: none;
-      font-size: 12px;
-      height: 20px;
-      line-height: 20px;
-      padding: 0 6px;
+      font-size: 11px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 5px;
     }
   }
 
   &.active {
-    background: var(--blue-700);
+    background: var(--blue-500);
     color: white;
 
     .menu-badge :deep(.el-badge__content) {
       background-color: white;
-      color: var(--blue-700);
+      color: var(--blue-500);
     }
   }
 
   &:hover:not(.active) {
-    background: var(--blue-50);
-    color: var(--blue-700);
+    background: var(--gray-100);
+    color: var(--gray-900);
   }
 }
 
 .quick-entries {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  margin-bottom: 16px;
+  padding: 12px;
+  border-top: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--gray-100);
+  margin-bottom: 12px;
 
   .entry-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 32px;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--gray-600);
     transition: all 0.2s;
 
     &:hover {
       background: var(--gray-100);
-      color: var(--blue-700);
+      color: var(--gray-900);
     }
   }
 }
 
 .add-friend-bottom {
-  padding: 0 20px 24px;
+  padding: 0 16px 20px;
   text-align: center;
   margin-top: auto;
 }
 
 .add-friend-btn {
   width: 100%;
-  height: 48px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 40px;
-  background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  background: var(--blue-500);
   border: none;
-  box-shadow: var(--shadow-blue);
   transition: all 0.2s;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-blue-lg);
-    background: linear-gradient(135deg, var(--blue-700), var(--blue-500));
+    background: var(--blue-600);
   }
 }
 </style>

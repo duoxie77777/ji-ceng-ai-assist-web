@@ -26,50 +26,49 @@ const handleSelect = (idx: string) => {
 
 <style scoped lang="scss">
 .settings-sidebar {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border-radius: 28px;
-  box-shadow: var(--shadow-sm);
-  padding: 16px 0;
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  padding: 12px 0;
   width: 100%;
 }
 
 .menu-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 0 16px;
+  gap: 2px;
+  padding: 0 12px;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 40px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
   color: var(--gray-700);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
 
   &:hover {
-    background: var(--blue-50);
-    color: var(--blue-700);
+    background: var(--gray-100);
+    color: var(--gray-900);
   }
 
   &.active {
-    background: var(--blue-700);
+    background: var(--blue-500);
     color: white;
 
     .menu-badge :deep(.el-badge__content) {
       background-color: white;
-      color: var(--blue-700);
+      color: var(--blue-500);
     }
   }
 
   .menu-icon {
-    font-size: 20px;
+    font-size: 18px;
     flex-shrink: 0;
   }
 
@@ -85,10 +84,10 @@ const handleSelect = (idx: string) => {
     :deep(.el-badge__content) {
       background-color: var(--red-500);
       border: none;
-      font-size: 12px;
-      height: 20px;
-      line-height: 20px;
-      padding: 0 6px;
+      font-size: 11px;
+      height: 18px;
+      line-height: 18px;
+      padding: 0 5px;
     }
   }
 }

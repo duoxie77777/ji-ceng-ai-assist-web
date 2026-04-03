@@ -228,18 +228,18 @@ onMounted(() => {
 <style scoped lang="scss">
 .task-center-container {
   padding: 20px;
-  background: var(--gray-50);
+  background: var(--white);
   min-height: 100vh;
 
   .task-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 15px 20px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
     background: var(--white);
     border-radius: 8px;
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
 
     .header-left {
       display: flex;
@@ -248,7 +248,7 @@ onMounted(() => {
 
       .page-title {
         margin: 0;
-        font-size: 18px;
+        font-size: 16px;
         color: var(--gray-800);
         font-weight: 600;
       }

@@ -54,50 +54,49 @@ defineProps<{
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 12px;
 
   .stat-card {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 20px;
+    gap: 12px;
+    padding: 16px;
     background: var(--white);
-    border-radius: 12px;
+    border-radius: 8px;
     border: 1px solid var(--gray-200);
     transition: all 0.2s ease;
 
     &:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
+      border-color: var(--gray-300);
     }
 
     .stat-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      font-size: 22px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 18px;
 
       &.today {
-        background: var(--blue-100);
-        color: var(--blue-500);
+        background: var(--gray-100);
+        color: var(--gray-700);
       }
 
       &.week {
-        background: var(--green-50);
-        color: var(--green-500);
+        background: var(--gray-100);
+        color: var(--gray-700);
       }
 
       &.duration {
-        background: rgba(94, 76, 175, 0.1);
-        color: var(--purple-500);
+        background: var(--gray-100);
+        color: var(--gray-700);
       }
 
       &.participants {
-        background: var(--red-50);
-        color: var(--red-500);
+        background: var(--gray-100);
+        color: var(--gray-700);
       }
     }
 
@@ -105,16 +104,16 @@ defineProps<{
       flex: 1;
 
       .stat-value {
-        font-size: 26px;
-        font-weight: 700;
+        font-size: 22px;
+        font-weight: 600;
         color: var(--gray-900);
         line-height: 1.2;
       }
 
       .stat-label {
-        font-size: 13px;
+        font-size: 12px;
         color: var(--gray-500);
-        margin-top: 4px;
+        margin-top: 2px;
       }
     }
   }

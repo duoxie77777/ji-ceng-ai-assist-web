@@ -83,56 +83,50 @@ const filteredList = computed(() => {
 .contact-list-view {
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
   }
 
   .contact-card {
     display: flex;
     align-items: center;
-    gap: 20px;
-    background: linear-gradient(135deg, var(--white) 0%, var(--gray-50) 100%);
-    border-radius: 28px;
-    padding: 20px;
-    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    gap: 16px;
+    background: var(--white);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--gray-200);
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
-      border-color: var(--blue-200);
-      background: var(--white);
+      border-color: var(--gray-300);
     }
 
     .card-avatar {
       position: relative;
       flex-shrink: 0;
-      width: 68px;
-      height: 68px;
+      width: 56px;
+      height: 56px;
 
       :deep(.el-avatar) {
-        width: 68px !important;
-        height: 68px !important;
-        font-size: 28px !important;
-        background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
-        color: white;
-        box-shadow: 0 6px 12px rgba(0, 100, 200, 0.2);
+        width: 56px !important;
+        height: 56px !important;
+        font-size: 22px !important;
+        background: var(--gray-200);
+        color: var(--gray-700);
       }
 
       .role-tag {
         position: absolute;
         bottom: -2px;
         right: -2px;
-        background: var(--blue-500);
+        background: var(--gray-700);
         color: white;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 6px;
+        border-radius: 4px;
         white-space: nowrap;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
     }
 
@@ -143,30 +137,29 @@ const filteredList = computed(() => {
       .info-name {
         display: flex;
         align-items: baseline;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
 
         .name-text {
-          font-weight: 700;
-          font-size: 18px;
+          font-weight: 600;
+          font-size: 16px;
           color: var(--gray-900);
-          letter-spacing: -0.2px;
         }
 
         .el-tag {
-          font-size: 12px;
-          padding: 0 8px;
-          height: 22px;
-          line-height: 20px;
+          font-size: 11px;
+          padding: 0 6px;
+          height: 20px;
+          line-height: 18px;
         }
       }
 
       .info-position {
-        color: var(--blue-600);
-        font-size: 14px;
-        font-weight: 500;
-        margin-bottom: 6px;
+        color: var(--gray-700);
+        font-size: 13px;
+        font-weight: 400;
+        margin-bottom: 4px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -174,7 +167,7 @@ const filteredList = computed(() => {
 
       .info-company,
       .info-dept {
-        font-size: 13px;
+        font-size: 12px;
         color: var(--gray-600);
         white-space: nowrap;
         overflow: hidden;
@@ -186,28 +179,14 @@ const filteredList = computed(() => {
         font-size: 12px;
         color: var(--gray-500);
         display: flex;
-        gap: 16px;
-        margin-top: 10px;
+        gap: 12px;
+        margin-top: 8px;
         flex-wrap: wrap;
 
         span {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-
-          &::before {
-            content: "📞";
-            font-size: 11px;
-            opacity: 0.6;
-          }
-
-          &:first-child::before {
-            content: "📱";
-          }
-
-          &:last-child::before {
-            content: "✉️";
-          }
         }
       }
     }
@@ -216,19 +195,13 @@ const filteredList = computed(() => {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      width: 70px;
+      gap: 6px;
+      width: 60px;
 
       .el-button {
-        font-size: 13px;
-        padding: 5px 0;
+        font-size: 12px;
+        padding: 4px 0;
         margin: 0;
-        border-radius: 40px;
-        transition: all 0.2s;
-
-        &:hover {
-          transform: scale(1.02);
-        }
       }
     }
   }
@@ -236,8 +209,8 @@ const filteredList = computed(() => {
   .empty-placeholder {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 80px 0;
-    font-size: 16px;
+    padding: 60px 0;
+    font-size: 14px;
     color: var(--gray-400);
   }
 }

@@ -54,7 +54,10 @@
 
           <!-- 主题切换 -->
           <div class="theme-toggle" @click="themeStore.toggleTheme">
-            <span class="theme-icon">{{ themeStore.isDark ? '🌙' : '☀️' }}</span>
+            <el-icon class="theme-icon">
+              <Moon v-if="themeStore.isDark" />
+              <Sunny v-else />
+            </el-icon>
           </div>
 
           <!-- 用户信息 -->
@@ -75,7 +78,9 @@
             </div>
             <div class="menu-divider"></div>
             <div class="menu-item" @click="handleLogout">
-              <span class="menu-icon">🚪</span>
+              <el-icon class="menu-icon">
+                <SwitchButton />
+              </el-icon>
               <span>退出登录</span>
             </div>
           </div>
@@ -96,7 +101,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Moon, Sunny, SwitchButton } from '@element-plus/icons-vue'
 import SvgIcon from '@/components/SvgIcon/SvgIcon.vue'
 import { userApi } from '@/api/user/user'
 import { menuApi } from '@/api/menu/menu'

@@ -62,7 +62,7 @@ const filteredList = computed(() => {
 
 <style scoped lang="scss">
 .approval-sidebar {
-  width: 380px;
+  width: 340px;
   height: 100%;
   border-right: 1px solid var(--gray-200);
   display: flex;
@@ -70,28 +70,29 @@ const filteredList = computed(() => {
   background: var(--white);
 
   .search-box {
-    padding: 16px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--gray-100);
   }
 
   .tab-list {
     display: flex;
-    padding: 12px 20px;
-    gap: 12px;
+    padding: 10px 16px;
+    gap: 8px;
     border-bottom: 1px solid var(--gray-100);
 
     .tab-item {
-      padding: 6px 16px;
-      border-radius: 20px;
+      padding: 5px 12px;
+      border-radius: 6px;
       cursor: pointer;
+      font-size: 13px;
 
       &.active {
-        background: var(--blue-50);
-        color: var(--blue-500);
+        background: var(--gray-100);
+        color: var(--gray-900);
       }
 
       &:hover:not(.active) {
-        background: var(--gray-100);
+        background: var(--gray-50);
       }
     }
   }
@@ -102,7 +103,7 @@ const filteredList = computed(() => {
   }
 
   .list-item {
-    padding: 20px;
+    padding: 14px 16px;
     cursor: pointer;
     border-bottom: 1px solid var(--gray-100);
 
@@ -111,23 +112,25 @@ const filteredList = computed(() => {
     }
 
     &.active {
-      background-color: var(--blue-50);
+      background-color: var(--gray-50);
       border-left: 3px solid var(--blue-500);
     }
 
     .item-title {
       color: var(--gray-900);
+      font-size: 14px;
     }
 
     .item-info {
       color: var(--gray-600);
       display: flex;
       justify-content: space-between;
-      margin-top: 8px;
+      margin-top: 6px;
+      font-size: 12px;
     }
 
     .item-status {
-      margin-top: 8px;
+      margin-top: 6px;
     }
   }
 }

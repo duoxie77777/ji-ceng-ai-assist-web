@@ -138,45 +138,48 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .task-stats-container {
   .stat-card {
-    padding: 20px;
+    padding: 16px;
     border-radius: 8px;
     text-align: center;
-    color: #fff;
+    color: var(--gray-800);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    border: 1px solid var(--gray-200);
+    background: var(--white);
 
     &:hover {
-      transform: translateY(-2px);
+      border-color: var(--gray-300);
     }
 
     .stat-number {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 6px;
     }
 
     .stat-label {
-      font-size: 14px;
+      font-size: 13px;
+      color: var(--gray-600);
     }
 
     &.total {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--gray-50);
     }
 
     &.pending {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      background: var(--gray-50);
     }
 
     &.processing {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: var(--gray-50);
     }
 
     &.completed {
-      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      background: var(--gray-50);
     }
 
     &.overdue {
-      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      background: var(--gray-50);
     }
   }
 
@@ -184,12 +187,13 @@ onUnmounted(() => {
     :deep(.el-card__header) {
       border-bottom: 1px solid var(--gray-200);
       font-weight: 600;
+      font-size: 14px;
     }
   }
 
   .chart-container {
     width: 100%;
-    height: 300px;
+    height: 280px;
     overflow: hidden;
   }
 }

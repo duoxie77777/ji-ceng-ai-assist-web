@@ -1,36 +1,35 @@
 <template>
-  <div class="func-card glass-card">
+  <div class="func-card">
     <div class="card-header">
       <span class="header-dot"></span>
       <h3>常用功能</h3>
     </div>
     <div class="func-grid">
-      <div v-for="func in functions" :key="func.name" class="func-item" :style="{ backgroundColor: func.bgColor }"
-        @click="handleFuncClick(func.name)">
+      <div v-for="func in functions" :key="func.name" class="func-item" @click="handleFuncClick(func.name)">
         <div class="func-icon">
           <span v-if="func.name.includes('视频')">
-            <svg-icon name="Videocam" size="32" />
+            <svg-icon name="Videocam" size="24" />
           </span>
           <span v-else-if="func.name.includes('会议')">
-            <svg-icon name="huiyizhongxin" size="32" />
+            <svg-icon name="huiyizhongxin" size="24" />
           </span>
           <span v-else-if="func.name.includes('文档')">
-            <svg-icon name="zaixianwendang1" size="32" />
+            <svg-icon name="zaixianwendang1" size="24" />
           </span>
           <span v-else-if="func.name.includes('任务')">
-            <svg-icon name="zhibi" size="32" />
+            <svg-icon name="zhibi" size="24" />
           </span>
           <span v-else-if="func.name.includes('消息')">
-            <svg-icon name="yunduo" size="32" />
+            <svg-icon name="yunduo" size="24" />
           </span>
           <span v-else-if="func.name.includes('审批')">
-            <svg-icon name="notepad__easy" size="32" />
+            <svg-icon name="notepad__easy" size="24" />
           </span>
           <span v-else-if="func.name.includes('AI')">
-            <svg-icon name="jiqiren" size="32" />
+            <svg-icon name="jiqiren" size="24" />
           </span>
           <span v-else>
-            <svg-icon name="yingyongzhongxin1" size="32" />
+            <svg-icon name="yingyongzhongxin1" size="24" />
           </span>
         </div>
         <span class="func-name">{{ func.name }}</span>
@@ -62,11 +61,9 @@ const handleFuncClick = (name: string) => {
 <style scoped>
 .func-card {
   padding: 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
 }
 
 .card-header {
@@ -76,15 +73,15 @@ const handleFuncClick = (name: string) => {
 }
 
 .header-dot {
-  width: 4px;
-  height: 18px;
+  width: 3px;
+  height: 16px;
   background: var(--blue-500);
   border-radius: 2px;
   margin-right: 8px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: var(--gray-900);
@@ -93,7 +90,7 @@ h3 {
 .func-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .func-item {
@@ -102,24 +99,28 @@ h3 {
   align-items: center;
   justify-content: center;
   padding: 16px 8px;
-  border-radius: 16px;
-  color: white;
-  transition: transform 0.2s;
+  border-radius: 8px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-100);
+  color: var(--gray-700);
+  transition: all 0.2s;
   cursor: pointer;
 }
 
 .func-item:hover {
-  transform: translateY(-4px);
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--blue-500);
 }
 
 .func-icon {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: 24px;
+  margin-bottom: 8px;
 }
 
 .func-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 400;
   text-align: center;
 }
 </style>

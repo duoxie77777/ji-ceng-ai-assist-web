@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-card glass-card">
+  <div class="notice-card">
     <div class="card-header">
       <span class="header-dot"></span>
       <h3>通知公告</h3>
@@ -27,11 +27,9 @@ const notices = store.notices
 <style scoped>
 .notice-card {
   padding: 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -44,15 +42,15 @@ const notices = store.notices
 }
 
 .header-dot {
-  width: 4px;
-  height: 18px;
+  width: 3px;
+  height: 16px;
   background: var(--blue-500);
   border-radius: 2px;
   margin-right: 8px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: var(--gray-900);
@@ -90,7 +88,7 @@ h3 {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--gray-100);
   font-size: 14px;
 }
@@ -101,14 +99,14 @@ h3 {
 
 .status-badge {
   font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 30px;
+  padding: 2px 6px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
 .status-badge.unread {
-  background: var(--blue-100);
-  color: var(--blue-700);
+  background: var(--blue-50);
+  color: var(--blue-600);
 }
 
 .status-badge.read {
@@ -118,7 +116,7 @@ h3 {
 
 .notice-title {
   flex: 1;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--gray-800);
   cursor: pointer;
   font-size: 14px;

@@ -17,6 +17,7 @@ declare module 'vue' {
     ElAvatarGroup: typeof import('element-plus/es')['ElAvatarGroup']
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCalendar: typeof import('element-plus/es')['ElCalendar']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElChartBar: typeof import('element-plus/es')['ElChartBar']

@@ -1,5 +1,5 @@
 <template>
-  <div class="task-card glass-card">
+  <div class="task-card">
     <div class="card-header">
       <span class="header-dot"></span>
       <h3>任务中心</h3>
@@ -29,7 +29,7 @@
             <span>处理进度</span>
             <span :style="{ color: task.textColor }">{{ task.percent }}%</span>
           </div>
-          <el-progress :percentage="task.percent" :stroke-width="8" :show-text="false" :color="task.barColor" />
+          <el-progress :percentage="task.percent" :stroke-width="6" :show-text="false" :color="task.barColor" />
         </div>
       </div>
     </div>
@@ -90,11 +90,9 @@ const handleTaskClick = (taskName: string) => {
 <style scoped>
 .task-card {
   padding: 20px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
 }
 
 .card-header {
@@ -104,36 +102,36 @@ const handleTaskClick = (taskName: string) => {
 }
 
 .header-dot {
-  width: 4px;
-  height: 18px;
+  width: 3px;
+  height: 16px;
   background: var(--blue-500);
   border-radius: 2px;
   margin-right: 8px;
 }
 
 h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   margin: 0;
   color: var(--gray-900);
 }
 
 .data-time {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--gray-500);
   margin-left: 12px;
 }
 
 .task-grid {
   display: flex;
-  gap: 20px;
+  gap: 16px;
 }
 
 .task-item {
   flex: 1;
-  background: linear-gradient(135deg, var(--white), var(--gray-50));
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 16px;
   border: 1px solid var(--gray-100);
   cursor: pointer;
   transition: transform 0.2s;
@@ -141,14 +139,14 @@ h3 {
 
 .task-item:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--gray-200);
 }
 
 .task-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .task-info {
@@ -156,35 +154,35 @@ h3 {
 }
 
 .task-count {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 600;
   color: var(--gray-900);
   line-height: 1;
 }
 
 .unit {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-600);
   margin-left: 4px;
 }
 
 .task-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--gray-700);
   margin-top: 6px;
 }
 
 .task-icon {
   font-size: 28px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   background: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-200);
 }
 
 .progress-wrapper {
@@ -194,8 +192,8 @@ h3 {
 .progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  margin-bottom: 8px;
+  font-size: 12px;
+  margin-bottom: 6px;
 }
 
 .progress-label span:first-child {
