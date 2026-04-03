@@ -22,6 +22,19 @@ export interface UserInfo {
   createTime?: string
   /** 最后登录时间 */
   lastLoginTime?: string
+  // 扩展字段（用于通讯录/聊天）
+  bio?: string;           // 职业/签名
+  sex?: '男' | '女' | '保密';
+  address?: {
+    country?: string;
+    city?: string;
+    detail?: string;
+  };
+  department?: string;    // 部门
+  position?: string;      // 职位
+  relation?: string;      // 关系标签（本局/智库等）
+  company?: string;       // 单位
+
 }
 
 /**

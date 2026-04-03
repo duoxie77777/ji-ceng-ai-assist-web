@@ -1,9 +1,8 @@
 <template>
   <div class="sidebar">
-    <!-- 侧边栏组件：包含搜索栏、搜索结果、会话列表 -->
+    <!-- 搜索框 -->
     <div class="search-bar">
-      <input type="text" v-model="searchKeyword" :placeholder="UI_TEXT.SEARCH_PLACEHOLDER"  @input="handleSearch"
-        @clear="chatStore.clearSearch()" />
+      <input type="text" v-model="searchKeyword" :placeholder="UI_TEXT.SEARCH_PLACEHOLDER" @input="handleSearch" />
       <button v-if="searchKeyword" @click="chatStore.clearSearch()">
         <svg-icon name="cuo" size="16" />
       </button>
@@ -12,21 +11,18 @@
       </button>
     </div>
 
-    <!-- 搜索结果 -->
+    <!-- 搜索结果列表 -->
     <div v-if="chatStore.searchKeyword" class="search-results">
       <div v-if="chatStore.searchResults.length === 0" class="no-results">
-        {{noResultText}}
+        {{ noResultText }}
       </div>
-      <!-- 搜索结果列表项：区分会话/消息类型 -->
-      <div v-else class="result-item" v-for="(result, index) in chatStore.searchResults" :key="index"
-        :class="{ 'highlight-active': highlightIndex === index }" @click="handleResultClick(result, index)">
-
-        <div v-if="result.type === SEARCH_RESULT_TYPE.CONVERSATION" class="conv-result">
+      <div v-else class="result-item" v-for="result in chatStore.searchResults"
+        :key="result.conversationId + result.msgId" @click="handleResultClick(result)">
+        <div v-if="result.type === SearchResultType.CONVERSATION" class="conv-result">
           <div class="result-type">联系人</div>
           <div class="result-content" v-html="result.matchText"></div>
         </div>
-
-        <div v-if="result.type === SEARCH_RESULT_TYPE.MESSAGE" class="msg-result">
+        <div v-if="result.type === SearchResultType.MESSAGE" class="msg-result">
           <div class="result-type">消息 · {{ result.conversationName }}</div>
           <div class="result-content" v-html="result.matchText"></div>
           <div class="result-time">{{ formatTime(result.timestamp, 'sidebar') }}</div>
@@ -36,7 +32,6 @@
 
     <!-- 会话列表 -->
     <div v-else class="conversations-list">
-      <!-- 会话项：展示头像、名称、最后消息、时间、未读数 -->
       <div v-for="conversation in chatStore.conversations" :key="conversation.id"
         :class="['conversation-item', { active: conversation.id === chatStore.activeConvId }]"
         @click="chatStore.switchConversation(conversation.id)">
@@ -46,7 +41,7 @@
           <div class="last-message">{{ conversation.lastMessage }}</div>
         </div>
         <div class="conversation-meta">
-          <div class="time">{{ conversation.lastMessageTime }}</div>
+          <div class="time">{{ formatTime(conversation.lastMessageTime, 'sidebar') }}</div>
           <div v-if="conversation.unreadCount > 0" class="unread-badge">
             {{ conversation.unreadCount }}
           </div>
@@ -57,88 +52,74 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue';
-import { useChatStore } from '@/views/message/utils/chatStrore';
-import { 
-  UI_TEXT, 
-  LAYOUT_CONST, 
-  SEARCH_RESULT_TYPE,
-  formatTime,
-  type SearchResult 
-} from '../utils/chat';
+import { computed } from 'vue'
+import { useChatStore } from '@/views/message/utils/chatStrore'
+import { SearchResultType } from '@/views/message/utils/type'
+import { UI_TEXT, formatTime } from '@/views/message/utils/chat'
 
-const chatStore = useChatStore();
+const chatStore = useChatStore()
 
-// 搜索关键词：双向绑定仓库中的搜索词
 const searchKeyword = computed({
   get: () => chatStore.searchKeyword,
-  set: (val) => chatStore.searchKeyword = val,
-});
-// 搜索结果高亮索引（点击后短暂高亮）
-const highlightIndex = ref(-1);
-let highlightTimer: NodeJS.Timeout | null = null;
+  set: (val) => { chatStore.searchKeyword = val }
+})
 
-// 无搜索结果文本：动态替换关键词占位符
-const noResultText = computed(() => {
-  return UI_TEXT.NO_SEARCH_RESULT.replace('{{keyword}}', chatStore.searchKeyword);
-});
+const noResultText = computed(() => UI_TEXT.NO_SEARCH_RESULT)
 
-// 处理搜索输入：触发仓库的搜索方法
 const handleSearch = () => {
-  chatStore.searchChats(searchKeyword.value);
-};
+  chatStore.searchChats(searchKeyword.value)
+}
 
-// 处理搜索结果点击：选中结果并添加短暂高亮
-const handleResultClick = (result: SearchResult, index: number) => {
-  if (highlightTimer) clearTimeout(highlightTimer);
-  highlightIndex.value = index;
-  chatStore.selectSearchResult(result);
-  highlightTimer = setTimeout(() => {
-    highlightIndex.value = -1;
-  }, LAYOUT_CONST.HIGHLIGHT_ACTIVE_DURATION); // 复用常量
-};
-
-onUnmounted(() => {
-  if (highlightTimer) clearTimeout(highlightTimer);
-});
-
+const handleResultClick = (result: any) => {
+  chatStore.selectSearchResult(result)
+}
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
+.sidebar {
+  width: 350px;
+  border-right: 1px solid var(--gray-200);
+  padding: 16px 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+}
+
 .search-bar {
   position: relative;
   display: flex;
   align-items: center;
   padding: 0 16px;
   margin-bottom: 16px;
-}
 
-.search-bar input {
-  width: 100%;
-  padding: 10px 36px;
-  border: 1px solid var(--gray-200); 
-  border-radius: 18px;
-  font-size: 14px;
-  outline: none;
-}
+  input {
+    width: 100%;
+    padding: 10px 36px;
+    border: 1px solid var(--gray-200);
+    border-radius: 18px;
+    font-size: 14px;
+    outline: none;
 
-.search-bar input:focus {
-  border-color: var(--blue-500); 
-}
+    &:focus {
+      border-color: var(--blue-500);
+    }
+  }
 
-.search-bar button {
-  position: absolute;
-  right: 24px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: var(--gray-600); 
-}
+  button {
+    position: absolute;
+    right: 24px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--gray-600);
 
-.search-bar button:first-of-type {
-  left: 24px;
-  right: auto;
+    &:first-of-type {
+      left: 24px;
+      right: auto;
+    }
+  }
 }
 
 .search-results {
@@ -149,43 +130,26 @@ onUnmounted(() => {
 
 .no-results {
   padding: 20px 0;
-  color: var(--gray-400); 
+  color: var(--gray-400);
   text-align: center;
   font-size: 14px;
 }
 
 .result-item {
   padding: 12px 8px;
-  border-bottom: 1px solid var(--gray-100); 
+  border-bottom: 1px solid var(--gray-100);
   cursor: pointer;
-}
 
-.result-item:hover {
-  background: var(--gray-50); 
-  border-radius: 8px;
-}
-
-.highlight-active {
-  background-color: var(--blue-500) !important; 
-  color: var(--white) !important;                
-  border-radius: 8px;
-}
-
-.highlight-active .result-type,
-.highlight-active .result-time {
-  color: var(--blue-50) !important; 
-}
-
-.highlight-active .highlight {
-  color: var(--white) !important;  
-  font-weight: 700;
+  &:hover {
+    background: var(--gray-50);
+    border-radius: 8px;
+  }
 }
 
 .result-type {
   font-size: 12px;
   color: var(--gray-400);
   margin-bottom: 4px;
-
 }
 
 .result-content {
@@ -204,15 +168,6 @@ onUnmounted(() => {
   margin-top: 4px;
 }
 
-.sidebar {
-  width: 350px;
-  border-right: 1px solid var(--gray-200);
-  padding: 16px 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
 .conversations-list {
   flex: 1;
   overflow-y: auto;
@@ -226,16 +181,15 @@ onUnmounted(() => {
   border-radius: 8px;
   cursor: pointer;
   margin-bottom: 8px;
-}
 
-.conversation-item.active {
-  background: var(--blue-50);
-}
+  &.active {
+    background: var(--blue-50);
+  }
 
-.conversation-item:hover {
-  background: var(--gray-50);
+  &:hover {
+    background: var(--gray-50);
+  }
 }
-
 
 .avatar {
   width: 48px;
@@ -268,7 +222,7 @@ onUnmounted(() => {
 }
 
 .conversation-meta {
-  text-align: center;
+  text-align: right;
 }
 
 .time {

@@ -3,19 +3,15 @@
     <div class="approval-info">
         <!-- 审批信息分段展示：基本信息/收发信息 -->
         <template v-for="(section, index) in renderSections" :key="index">
-      <div class="info-section">
-        <h4>{{ section.title }}</h4>
-        <el-descriptions :column="1" border>
-          <el-descriptions-item
-            v-for="item in section.fields"
-            :key="item.prop"
-            :label="item.label"
-          >
-            {{ item.formatter ? item.formatter(approval[item.prop]) : (approval[item.prop] || '-') }}
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-    </template>
+            <div class="info-section">
+                <h4>{{ section.title }}</h4>
+                <el-descriptions :column="1" border>
+                    <el-descriptions-item v-for="item in section.fields" :key="item.prop" :label="item.label">
+                        {{ item.formatter ? item.formatter(approval[item.prop]) : (approval[item.prop] || '-') }}
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+        </template>
 
         <!-- 附件展示区域：渲染上传的附件列表 -->
         <div class="file-section">
@@ -36,8 +32,8 @@ defineProps<{
 
 // 渲染分段配置：拆分审批信息为不同板块展示
 const renderSections: Array<{ title: string; fields: ApprovalFieldConfig[] }> = [
-  { title: '审批基本信息', fields: APPROVAL_INFO_FIELDS },
-  { title: '收发信息', fields: APPROVAL_SEND_FIELDS },
+    { title: '审批基本信息', fields: APPROVAL_INFO_FIELDS },
+    { title: '收发信息', fields: APPROVAL_SEND_FIELDS },
 ]
 </script>
 

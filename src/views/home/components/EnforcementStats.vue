@@ -1,0 +1,119 @@
+<template>
+  <div class="enforcement-card glass-card">
+    <div class="stat-section">
+      <div class="section-header">
+        <span class="header-dot"></span>
+        <h3>正在审查</h3>
+        <span class="data-time">数据时间：{{ currentDateTime }}</span>
+      </div>
+      <div class="stats-dual">
+        <div class="stat-block">
+          <div class="stat-number">{{ pendingCount }}</div>
+          <div class="stat-label">待审查</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-section">
+      <div class="section-header">
+        <span class="header-dot"></span>
+        <h3>完成审查</h3>
+        <span class="data-time">数据时间：{{ currentDateTime }}</span>
+      </div>
+      <div class="stats-dual">
+        <div class="stat-block">
+          <div class="stat-number">{{ completedCount }}</div>
+          <div class="stat-label">已完成</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useHomeStore } from '../utils/store'
+import { useApprovalStore } from '@/store/modules/services/approval'
+
+const homeStore = useHomeStore()
+const approvalStore = useApprovalStore()
+const currentDateTime = homeStore.currentDateTime
+const pendingCount = computed(() => approvalStore.pendingCount)
+const completedCount = computed(() => approvalStore.completedCount)
+</script>
+
+<style scoped>
+.enforcement-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stat-section {
+  width: 100%;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.header-dot {
+  width: 4px;
+  height: 18px;
+  background: var(--blue-500);
+  border-radius: 2px;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--gray-900);
+}
+
+.data-time {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-left: auto;
+}
+
+.stats-dual {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+}
+
+.stat-block {
+  flex: 1;
+  text-align: center;
+  background: linear-gradient(135deg, var(--white), var(--gray-50));
+  border-radius: 16px;
+  padding: 20px 12px;
+}
+
+.stat-number {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--blue-500);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-top: 8px;
+}
+
+.stat-section:last-child .stat-number {
+  color: var(--green-500);
+}
+</style>

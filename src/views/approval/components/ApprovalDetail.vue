@@ -1,82 +1,62 @@
 <template>
-  <!-- 审批详情页面：展示审批标题、状态、AI分析、正文、审批流程 -->
   <div class="approval-detail">
-    <!-- 详情头部：标题、元信息、审批操作按钮 -->
     <div class="detail-header">
-      <div class="header-left">
+      <div>
         <h2 class="detail-title">{{ approval.title }}</h2>
         <div class="detail-meta">
-          <el-tag size="small" :class="`tag-type-${approval.type}`">{{ approval.type }}</el-tag>
-          <span class="meta-item">{{ ApprovalDetailLocale.meta.docNo }} {{ approval.docNo }}</span>
-          <span class="meta-item">{{ ApprovalDetailLocale.meta.author }} {{ approval.author }}</span>
-          <span class="meta-item">{{ ApprovalDetailLocale.meta.time }} {{ approval.createTime }}</span>
+          <el-tag size="small" :type="TagTypeEnum.PRIMARY">{{ approval.type }}</el-tag>
+          <span class="meta-item">文号: {{ approval.docNo }}</span>
+          <span class="meta-item">发起: {{ approval.author }}</span>
+          <span class="meta-item">时间: {{ approval.createTime }}</span>
         </div>
       </div>
-      <div class="header-right" v-if="approval.status === 'in_progress'">
-        <el-button type="primary" size="large" @click="handleApprove(ApprovalConsts.Action.AGREE)">{{
-          ApprovalDetailLocale.button.agree }}</el-button>
-        <el-button size="large" @click="handleApprove(ApprovalConsts.Action.REJECT)">{{
-          ApprovalDetailLocale.button.reject }}</el-button>
+      <div v-if="canShowOperateBtn && approval.status === ApprovalStatusEnum.IN_PROGRESS" class="header-right">
+        <el-button type="primary" size="large" @click="handleApprove(ApprovalActionEnum.AGREE)">同意</el-button>
+        <el-button size="large" @click="handleApprove(ApprovalActionEnum.REJECT)">驳回</el-button>
       </div>
     </div>
 
-    <!-- AI分析卡片：展示关键标签、处理建议，可折叠 -->
     <div class="ai-card">
       <div class="card-title" @click="showAiDetail = !showAiDetail">
         <el-icon>
           <UserFilled />
-        </el-icon>
-        <span>{{ ApprovalDetailLocale.title.aiAnalysis }}</span>
+        </el-icon><span>AI 辅助分析</span>
         <el-icon class="toggle-icon" :class="{ rotate: showAiDetail }">
           <ArrowDown />
         </el-icon>
       </div>
       <div class="card-body" v-show="showAiDetail">
-        <div class="ai-row">
-          <span class="ai-label">关键标签</span>
-          <div class="ai-tags">
-            <el-tag v-for="tag in getKeyTags" :key="tag" size="small">{{ tag }}</el-tag>
-          </div>
+        <div class="ai-row"><span class="ai-label">关键标签</span>
+          <div class="ai-tags"><el-tag v-for="tag in getKeyTags" :key="tag" size="small">{{ tag }}</el-tag></div>
         </div>
-        <div class="ai-row">
-          <span class="ai-label">处理建议</span>
+        <div class="ai-row"><span class="ai-label">处理建议</span>
           <p class="ai-suggestion">{{ getAiSuggestion }}</p>
         </div>
       </div>
     </div>
 
-    <!-- 事项正文区域：渲染审批正文内容 -->
     <div class="content-section">
       <h3 class="section-title">事项正文</h3>
       <div class="content-body" v-html="getContentHtml()"></div>
     </div>
 
-    <!-- 审批流程区域：展示审批时间线、处理人、状态、备注 -->
     <div class="process-section">
-      <h3 class="section-title">{{ ApprovalDetailLocale.title.process }}</h3>
+      <h3 class="section-title">审批流程</h3>
       <div class="custom-timeline">
-        <div v-for="(item, index) in approval.processList" :key="index" class="timeline-item">
+        <div v-for="(item, idx) in approval.processList" :key="idx" class="timeline-item">
           <div class="timeline-left">
-            <div class="timeline-time">
-              <span class="date">{{ formatDate(item.time) }}</span>
-              <span class="time">{{ formatTime(item.time) }}</span>
-            </div>
+            <div class="timeline-time"><span class="date">{{ formatDate(item.time) }}</span><span class="time">{{
+              formatTime(item.time) }}</span></div>
           </div>
           <div class="timeline-center">
             <div class="timeline-dot" :class="`dot-${item.type}`"></div>
-            <div class="timeline-line" v-if="index !== approval.processList.length - 1"></div>
+            <div class="timeline-line" v-if="idx !== approval.processList.length - 1"></div>
           </div>
           <div class="timeline-right">
             <div class="timeline-content">
-              <div class="status-tag" :class="`tag-${item.type}`">
-                {{ getStatusText(item.status) }}
-              </div>
-              <div class="handler">
-                {{ item.user }}
-              </div>
-              <div class="comment" v-if="item.comment">
-                {{ item.comment }}
-              </div>
+              <div class="status-tag" :class="`tag-${item.type}`">{{ getStatusText(item.status) }}</div>
+              <div class="handler">{{ item.user }}</div>
+              <div class="comment" v-if="item.comment">{{ item.comment }}</div>
             </div>
           </div>
         </div>
@@ -85,103 +65,56 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { UserFilled, ArrowDown } from '@element-plus/icons-vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { UserFilled, ArrowDown } from '@element-plus/icons-vue';
 import {
   ApprovalStatusEnum,
-  APPROVAL_STATUS_LABEL,
+  ApprovalActionEnum,
+  ApprovalActionMap,
+  TagTypeEnum,
   AI_TAGS,
   AI_SUGGESTION,
   COMMON_TEXT,
-  formatDateTime,
-  ApprovalDetailLocale,
-  ApprovalConsts,
-  ApprovalActionMap,
-} from '../utils/types'
-import App from '@/App.vue'
+  CURRENT_USER
+} from '../utils/types';
+import type { ApprovalItem } from '../utils/types';
 
-// 接收父组件传递的审批项：展示对应审批的完整详情
-const props = defineProps({
-  approval: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{ approval: ApprovalItem }>();
+const emit = defineEmits(['approve']);
 
-// 定义向外触发的事件：审批操作（同意/拒绝）
-const emit = defineEmits(['approve'])
-// AI卡片折叠状态：控制AI分析区域显示/隐藏
-const showAiDetail = ref(true)
+const canShowOperateBtn = computed(() => props.approval.author !== CURRENT_USER && props.approval.status === ApprovalStatusEnum.IN_PROGRESS);
+const showAiDetail = ref(true);
 
-// 获取状态文本：将审批状态码转换为中文显示
-const getStatusText = (status) => {
-  const entry = Object.entries(ApprovalActionMap).find(
-    ([_, value]) => value.status === status
-  );
-  return entry ? entry[1].text : status;
-}
+const getStatusText = (status: string) => {
+  const entry = Object.values(ApprovalActionMap).find(v => v.status === status);
+  return entry ? entry.text : status;
+};
+const formatDate = (full: string) => full.split(' ')[0];
+const formatTime = (full: string) => full.split(' ')[1];
+const getKeyTags = computed(() => AI_TAGS[props.approval.type] || AI_TAGS.DEFAULT);
+const getAiSuggestion = computed(() => AI_SUGGESTION[props.approval.type] || AI_SUGGESTION.DEFAULT);
+const getContentHtml = () => props.approval.processList[0]?.comment || COMMON_TEXT.NO_ATTACHMENT;
 
-// 格式化日期：提取时间中的日期部分
-const formatDate = (fullTime) => formatDateTime(fullTime).date;
-// 格式化时间：提取时间中的时分秒部分
-const formatTime = (fullTime) => formatDateTime(fullTime).time;
-
-// AI关键标签：根据审批类型匹配对应的标签
-const getKeyTags = computed(() => {
-  const type = props.approval?.type
-  return AI_TAGS[type ?? 'DEFAULT'] || AI_TAGS['DEFAULT'];
-})
-
-// AI处理建议：根据审批类型匹配对应的建议
-const getAiSuggestion = computed(() => {
-  const type = props.approval?.type
-  return AI_SUGGESTION[type ?? 'DEFAULT'] || AI_SUGGESTION['DEFAULT'];
-})
-
-// 获取正文内容：从审批流程中提取正文，无内容时显示默认文本
-const getContentHtml = () => {
-  return props.approval?.processList?.[0]?.comment || COMMON_TEXT.NO_ATTACHMENT
-}
-
-// 处理审批操作：弹窗输入备注，向父组件触发审批事件
-const handleApprove = async (type) => {
+const handleApprove = async (type: ApprovalActionEnum) => {
+  const isAgree = type === ApprovalActionEnum.AGREE;
+  const msg = isAgree ? '请输入审批意见' : '请输入驳回理由';
+  const title = isAgree ? '同意审批' : '驳回审批';
   try {
-    const msg = type === 'agree'
-      ? COMMON_TEXT.FORM_REQUIRED_CONTENT
-      : COMMON_TEXT.FORM_REQUIRED_CONTENT
-
-    const confirmText = type === 'agree' ? ApprovalDetailLocale.button.confirm : ApprovalDetailLocale.button.cancel;
-    const { value } = await ElMessageBox.prompt(
-      msg,
-      type === 'agree' ? ApprovalDetailLocale.button.agree : ApprovalDetailLocale.button.reject,
-      {
-        inputValidator: val => val.trim() !== '',
-        confirmButtonText: confirmText,
-        cancelButtonText: ApprovalDetailLocale.button.cancel,
-        inputErrorMessage: COMMON_TEXT.APPROVAL_REQUIRE_COMMENT
-      }
-    )
-
-    // 向父组件传递审批结果
-    emit('approve', {
-      id: props.approval.id,
-      result: type,
-      comment: value
-    })
-
-    // 提示审批成功
-    const successMessage = type === ApprovalConsts.Action.AGREE
-      ? ApprovalDetailLocale.message.agreeSuccess
-      : ApprovalDetailLocale.message.rejectSuccess;
-    ElMessage.success(successMessage);
-    
-  } catch (error) {
-    // 取消审批时提示
-    ElMessage.info(ApprovalDetailLocale.message.cancel);
+    const { value: comment } = await ElMessageBox.prompt(msg, title, {
+      inputValidator: val => val.trim() !== '',
+      confirmButtonText: isAgree ? '确认同意' : '确认驳回',
+      cancelButtonText: '取消',
+      inputErrorMessage: '请输入内容'
+    });
+    emit('approve', { id: props.approval.id, result: type, comment });
+    ElMessage.success(isAgree ? '已同意' : '已驳回');
+  } catch (err) {
+    if (err !== 'cancel') ElMessage.error('操作失败');
+    else ElMessage.info('已取消');
   }
-}
+};
 </script>
 
 <style scoped lang="less">
@@ -372,11 +305,11 @@ const handleApprove = async (type) => {
         }
 
         &.dot-warning {
-          background: var(--warning-color);
+          background: var(--orange-500);
         }
 
-        &.dot-danger {
-          background: var(--red-500);
+        &.tag-warning {
+          background: var(--orange-500);
         }
       }
 

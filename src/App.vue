@@ -30,7 +30,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.8);
+  // background: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(180deg, #e6f0ff 0%, #f0f7ff 100%);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -9,22 +9,12 @@
       <form class="login-form" @submit.prevent="handleLogin">
         <div class="form-item">
           <label>用户名</label>
-          <input
-            v-model="formData.username"
-            type="text"
-            placeholder="请输入用户名"
-            autocomplete="username"
-          />
+          <input v-model="formData.username" type="text" placeholder="请输入用户名" autocomplete="username" />
         </div>
 
         <div class="form-item">
           <label>密码</label>
-          <input
-            v-model="formData.password"
-            type="password"
-            placeholder="请输入密码"
-            autocomplete="current-password"
-          />
+          <input v-model="formData.password" type="password" placeholder="请输入密码" autocomplete="current-password" />
         </div>
 
         <button type="submit" class="login-btn" :disabled="loading">

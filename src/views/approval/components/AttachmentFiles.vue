@@ -27,7 +27,7 @@
                 <!-- 不支持预览：提示不支持的文件类型 -->
                 <div v-else class="not-support">
                     <svg-icon name="wenjian" size="40" />
-                    <p>{{COMMON_TEXT.FILE_INVALID_PREVIEW}}</p>
+                    <p>{{ COMMON_TEXT.FILE_INVALID_PREVIEW }}</p>
                 </div>
             </div>
         </el-dialog>
@@ -37,7 +37,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { COMMON_TEXT,isValidFile } from '../utils/types'
+import { COMMON_TEXT, isValidFile } from '../utils/types'
 
 // 接收父组件传递的文件列表：展示对应的附件
 const props = defineProps({
