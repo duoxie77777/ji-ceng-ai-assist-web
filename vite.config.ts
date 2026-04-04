@@ -42,6 +42,10 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           // rewrite: (path) => path.replace(/^\/api/, ''),  // 如果需要去掉 /api 前缀
         },
+        '/uploads': {
+          target: 'http://localhost:3000',  // 后端文件服务器地址
+          changeOrigin: true,
+        },
       },
     },
     // 定义全局常量

@@ -193,6 +193,38 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 上传头像
+  const uploadAvatar = async (file: File) => {
+    try {
+      loading.value = true
+      const result = await userApi.uploadAvatar(file)
+      if (userInfo.value) {
+        userInfo.value.avatar = result.avatar
+      }
+      saveToLocalStorage()
+      return result
+    } catch (error: any) {
+      console.error('上传头像失败:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 修改密码
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    try {
+      loading.value = true
+      await userApi.changePassword({ oldPassword, newPassword })
+      return { success: true, message: '密码修改成功' }
+    } catch (error: any) {
+      console.error('修改密码失败:', error)
+      return { success: false, message: error.message || '修改密码失败' }
+    } finally {
+      loading.value = false
+    }
+  }
+
   // 刷新令牌
   const refreshAuthToken = async (): Promise<boolean> => {
     if (!refreshToken.value) {
@@ -299,6 +331,8 @@ export const useUserStore = defineStore('user', () => {
     logout,
     getUserInfo,
     updateUserInfo,
+    uploadAvatar,
+    changePassword,
     refreshAuthToken,
     setAuth,
     clearAuth,

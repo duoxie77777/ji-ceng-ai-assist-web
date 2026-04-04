@@ -95,7 +95,7 @@ const formatDate = (full: string) => full.split(' ')[0];
 const formatTime = (full: string) => full.split(' ')[1];
 const getKeyTags = computed(() => AI_TAGS[props.approval.type] || AI_TAGS.DEFAULT);
 const getAiSuggestion = computed(() => AI_SUGGESTION[props.approval.type] || AI_SUGGESTION.DEFAULT);
-const getContentHtml = () => props.approval.processList[0]?.comment || COMMON_TEXT.NO_ATTACHMENT;
+const getContentHtml = () => props.approval.content || COMMON_TEXT.NO_ATTACHMENT;
 
 const handleApprove = async (type: ApprovalActionEnum) => {
   const isAgree = type === ApprovalActionEnum.AGREE;

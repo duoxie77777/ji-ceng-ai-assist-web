@@ -81,7 +81,7 @@ const defaultAvatar = 'https://cube.elemecdn.com/0/88/03b01d2d5f2b9e2e7d5f8e2e7d
 const contextMenuVisible = ref(false)
 const contextMenuX = ref(0)
 const contextMenuY = ref(0)
-const currentDeleteId = ref<string | number | null>(null)
+const currentDeleteId = ref<number | null>(null)
 
 const getAvatarText = (name: string) => {
   if (!name) return ''
@@ -97,53 +97,37 @@ const searchKeyword = computed({
 const noResultText = computed(() => UI_TEXT.NO_SEARCH_RESULT)
 
 const handleSearch = () => {
-  chatStore.searchChats(searchKeyword.value)
+  // chatStore.searchChats(searchKeyword.value)
 }
 
 const handleResultClick = (result: any) => {
-  chatStore.selectSearchResult(result)
+  chatStore.switchConversation(result.conversationId)
+  chatStore.searchKeyword = ''
 }
 
-// 显示右键菜单
-const showDeleteMenu = (conversationId: string | number, event: MouseEvent) => {
-  console.log('=== [右键菜单调试] ===')
-  console.log('conversationId:', conversationId)
-  console.log('conversationId 类型:', typeof conversationId)
-  console.log('=====================')
-  
-  currentDeleteId.value = conversationId
+const showDeleteMenu = (id: number, event: MouseEvent) => {
+  currentDeleteId.value = id
   contextMenuX.value = event.clientX
   contextMenuY.value = event.clientY
   contextMenuVisible.value = true
+  
+  const hideHandler = () => {
+    hideContextMenu()
+    document.removeEventListener('click', hideHandler)
+  }
+  document.addEventListener('click', hideHandler)
 }
 
-// 隐藏右键菜单
 const hideContextMenu = () => {
   contextMenuVisible.value = false
   currentDeleteId.value = null
 }
 
-// 执行删除
-const handleDelete = async () => {
-  if (!currentDeleteId.value) return
-  
-  const { ElMessageBox, ElMessage } = await import('element-plus')
-  ElMessageBox.confirm('确定要删除这个会话吗？', '提示', {
-    confirmButtonText: '删除',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await chatStore.deleteConversation(currentDeleteId.value)
-      ElMessage.success('删除成功')
-    } catch (error: any) {
-      ElMessage.error(error.message || '删除失败')
-    } finally {
-      hideContextMenu()
-    }
-  }).catch(() => {
-    hideContextMenu()
-  })
+const handleDelete = () => {
+  if (currentDeleteId.value) {
+    chatStore.deleteConversation(currentDeleteId.value)
+  }
+  hideContextMenu()
 }
 
 // 点击其他地方关闭菜单

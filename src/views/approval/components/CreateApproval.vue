@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, watch } from 'vue'
 import type { UploadFile, UploadProps, FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import {
@@ -49,9 +49,13 @@ import {
   ApprovalTypeEnum
 } from '../utils/types'
 import type { CreateApprovalForm } from '../utils/types'
+import { useUserStore } from '@/store/modules/user'
 
 const props = defineProps<{ initialData?: CreateApprovalForm | null }>()
 const emit = defineEmits(['submit', 'draft', 'cancel'])
+
+// 获取用户 store
+const userStore = useUserStore()
 
 const form = ref<CreateApprovalForm>(getEmptyForm())
 watch(() => props.initialData, (data) => {
@@ -98,12 +102,61 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate()
     isSubmitting.value = true
-    const files = form.value.fileList.filter(isValidFile).map(f => ({ name: f.name, raw: f.raw }))
-    emit('submit', { ...form.value, files })
+    
+    // 上传文件，获取文件 URL
+    const uploadedFiles: { name: string; url: string }[] = []
+    
+    for (const fileItem of form.value.fileList) {
+      // el-upload 的 file 对象有 raw 属性
+      const rawFile = fileItem.raw as File | undefined
+      
+      if (rawFile) {
+        try {
+          const result = await uploadFile(rawFile)
+          uploadedFiles.push({ name: result.name, url: result.url })
+        } catch (err: any) {
+          console.error('文件上传失败:', fileItem.name, err)
+          ElMessage.error(`文件 ${fileItem.name} 上传失败`)
+        }
+      } else if (fileItem.url) {
+        // 如果没有 raw，可能是已上传过的文件，直接使用 url
+        uploadedFiles.push({ name: fileItem.name, url: fileItem.url })
+      }
+    }
+    
+    emit('submit', { ...form.value, files: uploadedFiles })
   } catch (err) {
     console.error(err)
   } finally {
     isSubmitting.value = false
+  }
+}
+
+// 使用消息模块的文件上传接口
+const uploadFile = async (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  // uploaderId 必须，且后端期望 number 类型
+  formData.append('uploaderId', String(userStore.userInfo?.id || 1))
+  
+  const response = await fetch('/api/message/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+    },
+    body: formData
+  })
+  
+  const result = await response.json()
+  
+  if (!response.ok || result.code !== 0) {
+    throw new Error(result.message || '上传失败')
+  }
+  
+  // 返回上传后的文件信息
+  return {
+    url: result.data.fileUrl,
+    name: result.data.originalName || file.name
   }
 }
 </script>

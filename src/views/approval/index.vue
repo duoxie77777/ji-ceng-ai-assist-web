@@ -1,10 +1,21 @@
 <template>
   <div class="approval-page">
-    <ApprovalSidebar :list="filteredList" :active-tab="activeTab" :search-keyword="searchKeyword"
-      :selected="selectedApproval" @update:active-tab="activeTab = $event"
-      @update:search-keyword="searchKeyword = $event" @select="handleSelect" />
+    <ApprovalSidebar 
+      :list="approvalList" 
+      :active-tab="activeTab" 
+      :search-keyword="searchKeyword"
+      :selected="selectedApproval" 
+      @update:active-tab="activeTab = $event"
+      @update:search-keyword="searchKeyword = $event" 
+      @select="handleSelect" 
+    />
 
-    <ApprovalDetail ref="detailRef" v-if="selectedApproval" :approval="selectedApproval" @approve="handleApproval" />
+    <ApprovalDetail 
+      ref="detailRef" 
+      v-if="selectedApproval" 
+      :approval="selectedApproval" 
+      @approve="handleApproval" 
+    />
     <ApprovalInfo v-if="selectedApproval" :approval="selectedApproval" />
 
     <el-drawer v-model="showCreateDrawer" title="发起事项" size="80%" direction="rtl" :close-on-click-modal="false"
@@ -35,277 +46,324 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ApprovalSidebar from './components/ApprovalSidebar.vue'
 import ApprovalDetail from './components/ApprovalDetail.vue'
 import ApprovalInfo from './components/ApprovalInfo.vue'
 import CreateApproval from './components/CreateApproval.vue'
-import type { ApprovalItem, ApprovalProcess, CreateApprovalForm, DraftItem } from './utils/types'
+import { approvalApi, ApprovalStatus } from '@/api/approval/approval'
+import { useUserStore } from '@/store/modules/user'
+import type { ApprovalItem, CreateApprovalForm, DraftItem } from './utils/types'
 import {
-  ApprovalTypeEnum,
-  ApprovalStatusEnum,
   ApprovalTabEnum,
   ApprovalActionEnum,
-  ApprovalActionMap,
-  MESSAGE,
-  CURRENT_USER,
-  formatDateTime,
   generateApprovalId,
-  generateDocNo,
-  COMMON_TEXT,
+  formatDateTime,
 } from './utils/types'
 
-// 当前用户
-const currentUser = CURRENT_USER
+const userStore = useUserStore()
+const currentUserId = userStore.userInfo?.id || 0
 
-// 日期格式化
-const formatTime = (date: Date = new Date()): string => formatDateTime(date).full
+// 审批列表
+const approvalList = ref<ApprovalItem[]>([])
+const activeTab = ref(ApprovalTabEnum.ALL)
+const searchKeyword = ref('')
+const selectedApproval = ref<ApprovalItem | null>(null)
+const loading = ref(false)
 
-// 草稿箱
+// 转换后端数据到前端视图模型
+const transformData = (backendData: any[]): ApprovalItem[] => {
+  return backendData.map(item => {
+    // 强制解析并规范化 files 列表
+    let fileList: any[] = [];
+    try {
+      const rawFiles = typeof item.files === 'string' ? JSON.parse(item.files) : item.files;
+      if (Array.isArray(rawFiles)) {
+        fileList = rawFiles.map(f => {
+          // 如果是字符串，直接作为 URL（相对路径通过 Vite 代理访问）
+          if (typeof f === 'string') {
+            const url = f.startsWith('http://') || f.startsWith('https://') ? f : f;
+            return { name: f.split('/').pop(), url };
+          }
+          // 如果是对象
+          if (f && typeof f === 'object') {
+            if (f.url) return { name: f.name || f.url.split('/').pop(), url: f.url };
+            if (f.name) return { name: f.name, url: f.name };
+          }
+          return null;
+        }).filter(Boolean);
+      }
+    } catch (e) {
+      console.error('Files parse error:', e);
+    }
+
+    return {
+      id: item.businessId,
+      dbId: item.id,
+      title: item.title,
+      content: item.content,
+      department: item.department || '未知部门',
+      status: item.status,
+      createTime: formatDateTime(new Date(item.createdAt)).full,
+      type: item.type,
+      author: item.author?.username || '未知',
+      docNo: item.docNo,
+      mainSend: '',
+      ccList: [],
+      chargeUsers: ['领导'], // 模拟显示
+      processList: (item.records || []).map((rec: any) => ({
+        time: formatDateTime(new Date(rec.createdAt)).full,
+        status: rec.action === 'agree' ? 'passed' : (rec.action === 'reject' ? 'rejected' : 'in_progress'),
+        user: rec.user?.username || '系统',
+        comment: rec.opinion || '',
+        type: rec.action === 'agree' ? 'success' : (rec.action === 'reject' ? 'danger' : 'primary')
+      })),
+      recordList: [],
+      files: fileList
+    };
+  });
+}
+
+const fetchList = async () => {
+  loading.value = true
+  try {
+    const res = await approvalApi.getList({ 
+      userId: currentUserId,
+      status: activeTab.value,
+      keyword: searchKeyword.value
+    })
+    const newList = transformData(res)
+    approvalList.value = newList
+    
+    // 如果有选中的事项，同步更新选中的数据内容
+    if (selectedApproval.value) {
+      const updated = newList.find(item => item.dbId === selectedApproval.value?.dbId)
+      if (updated) {
+        selectedApproval.value = updated
+      }
+    } else if (newList.length > 0) {
+      selectedApproval.value = newList[0]
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+watch([activeTab, searchKeyword], () => {
+  fetchList()
+})
+
+const handleSelect = (item: ApprovalItem) => {
+  selectedApproval.value = item
+}
+
+// 发起审批
+const handleCreateApproval = async (formData: CreateApprovalForm) => {
+  try {
+    // 获取文件 URL 列表
+    const fileUrls = (formData.files || []).map((f: any) => f.url || f.name)
+    
+    await approvalApi.create({
+      title: formData.title,
+      content: formData.content,
+      type: formData.type,
+      authorId: currentUserId,
+      chargeUserIds: [1], // 模拟
+      status: ApprovalStatus.IN_PROGRESS,
+      files: fileUrls
+    })
+    
+    // 如果是从草稿提交，则从草稿箱中移除
+    if (editingDraftId.value) {
+      draftList.value = draftList.value.filter(d => d.id !== editingDraftId.value)
+      saveDraftsToLocal()
+      resetCreateDrawer()
+    }
+    
+    ElMessage.success('发起审批成功')
+    showCreateDrawer.value = false
+    fetchList()
+  } catch (error) {
+    ElMessage.error('发起失败')
+  }
+}
+
+// 审批处理
+const handleApproval = async ({ result, comment }: { result: string, comment: string }) => {
+  if (!selectedApproval.value?.dbId) return
+  try {
+    await approvalApi.updateStatus({
+      approvalId: selectedApproval.value.dbId,
+      userId: currentUserId,
+      action: result, // result 是 'agree' 或 'reject'
+      opinion: comment
+    })
+    ElMessage.success('审批处理成功')
+    fetchList()
+  } catch (error) {
+    ElMessage.error('处理失败')
+  }
+}
+
+// 草稿相关逻辑
 const showDraftDrawer = ref(false)
 const draftList = ref<DraftItem[]>([])
 const editingDraftId = ref<string | null>(null)
 const editingDraftData = ref<CreateApprovalForm | null>(null)
+const showCreateDrawer = ref(false)
 
-// 打开发起抽屉
+// 从本地加载草稿
+const loadDraftsFromLocal = () => {
+  const saved = localStorage.getItem('approval_drafts')
+  if (saved) {
+    try {
+      draftList.value = JSON.parse(saved)
+    } catch (e) {
+      console.error('加载草稿失败', e)
+    }
+  }
+}
+
+// 保存草稿到本地
+const saveDraftsToLocal = () => {
+  localStorage.setItem('approval_drafts', JSON.stringify(draftList.value))
+}
+
 const openCreateDrawer = () => {
-  resetCreateDrawer()
+  editingDraftId.value = null
+  editingDraftData.value = null
   showCreateDrawer.value = true
 }
 
-// 重置草稿编辑状态
 const resetCreateDrawer = () => {
   editingDraftId.value = null
   editingDraftData.value = null
 }
 
-// 删除草稿
-const deleteDraft = (id: string) => {
-  ElMessageBox.confirm('确定删除该草稿吗？', '提示', { type: 'warning' }).then(() => {
-    draftList.value = draftList.value.filter(d => d.id !== id)
-    ElMessage.success('草稿已删除')
-  }).catch(() => { })
+const handleSaveDraft = (formData: CreateApprovalForm) => {
+  const now = new Date()
+  const draftId = editingDraftId.value || generateApprovalId()
+  const existingIndex = draftList.value.findIndex(d => d.id === draftId)
+  
+  // 处理附件：如果是图片，则尝试保存 base64 以便预览
+  const processFiles = async () => {
+    const fileListWithData = await Promise.all(formData.fileList.map(async (f) => {
+      const isImage = f.raw?.type.startsWith('image/')
+      let dataUrl = ''
+      if (isImage && f.raw) {
+        dataUrl = await new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = (e) => resolve(e.target?.result as string)
+          reader.readAsDataURL(f.raw!)
+        })
+      }
+      return { 
+        name: f.name, 
+        uid: f.uid, 
+        status: f.status,
+        size: f.size,
+        type: f.raw?.type || '',
+        dataUrl: dataUrl // 存储图片的 base64
+      }
+    }))
+
+    const draft: DraftItem = {
+      id: draftId,
+      type: formData.type,
+      title: formData.title,
+      content: formData.content,
+      chargeUsers: formData.chargeUsers,
+      fileList: fileListWithData as any,
+      saveTime: formatDateTime(now).full
+    }
+
+    if (existingIndex >= 0) {
+      draftList.value[existingIndex] = draft
+    } else {
+      draftList.value.unshift(draft)
+    }
+    
+    saveDraftsToLocal()
+    ElMessage.success('草稿已保存')
+    showCreateDrawer.value = false
+    resetCreateDrawer()
+  }
+
+  processFiles()
 }
 
-// 编辑草稿
 const editDraft = (draft: DraftItem) => {
   editingDraftId.value = draft.id
-  const convertedFileList = (draft.fileList || []).map(f => ({
-    name: f.name,
-    uid: f.uid || Date.now(),
-    status: f.status || 'ready',
-    raw: undefined
-  }))
   editingDraftData.value = {
     type: draft.type,
     title: draft.title,
     content: draft.content,
     chargeUsers: draft.chargeUsers,
-    fileList: convertedFileList,
+    fileList: (draft.fileList || []).map((f: any) => {
+      // 如果有 dataUrl，将其转换回 Blob/File 对象
+      let rawFile: File | null = null
+      if (f.dataUrl) {
+        const arr = f.dataUrl.split(',')
+        const mime = arr[0].match(/:(.*?);/)[1]
+        const bstr = atob(arr[1])
+        let n = bstr.length
+        const u8arr = new Uint8Array(n)
+        while(n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        rawFile = new File([u8arr], f.name, { type: mime })
+      } else {
+        rawFile = new File([], f.name, { type: f.type })
+      }
+
+      return {
+        ...f,
+        raw: rawFile
+      }
+    }) as any,
     status: 'draft'
   }
   showDraftDrawer.value = false
   showCreateDrawer.value = true
 }
 
-// 保存草稿
-const handleSaveDraft = (formData: CreateApprovalForm) => {
-  const now = new Date()
-  const draftId = editingDraftId.value || generateApprovalId()
-  const existingIndex = draftList.value.findIndex(d => d.id === draftId)
-  const draft: DraftItem = {
-    id: draftId,
-    type: formData.type,
-    title: formData.title,
-    content: formData.content,
-    chargeUsers: formData.chargeUsers,
-    fileList: formData.fileList.map(f => ({ name: f.name, uid: f.uid, status: f.status })),
-    saveTime: formatDateTime(now).full
-  }
-  if (existingIndex >= 0) draftList.value[existingIndex] = draft
-  else draftList.value.unshift(draft)
-  ElMessage.success('草稿已保存')
-  showCreateDrawer.value = false
-  resetCreateDrawer()
+const deleteDraft = (id: string) => {
+  ElMessageBox.confirm('确定删除该草稿吗？', '提示', { type: 'warning' }).then(() => {
+    draftList.value = draftList.value.filter(d => d.id !== id)
+    saveDraftsToLocal()
+    ElMessage.success('草稿已删除')
+  })
 }
 
-// 模拟审批列表数据
-const getMockApprovalList = (): ApprovalItem[] => {
-  const now = new Date()
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-  const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
-  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
-  const fourDaysAgo = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000)
-  return [
-    {
-      id: 'MQ20260223001',
-      title: '李家村春耕农资补贴申请',
-      department: '李家村村委会',
-      status: ApprovalStatusEnum.IN_PROGRESS,
-      createTime: formatDateTime(yesterday).full,
-      type: ApprovalTypeEnum.AGRICULTURE,
-      author: '张建国',
-      docNo: '李村发〔2026〕08号',
-      mainSend: '镇农业农村办公室',
-      ccList: ['镇分管领导'],
-      chargeUsers: ['李主任'],
-      processList: [
-        { time: formatDateTime(yesterday).full, status: ApprovalStatusEnum.IN_PROGRESS, user: '张建国', comment: '申请春耕农资补贴', type: ApprovalActionMap.submit.tagType },
-        { time: formatDateTime(new Date(yesterday.getTime() + 1 * 60 * 60 * 1000)).full, status: ApprovalStatusEnum.IN_PROGRESS, user: '李主任', comment: '正在核实', type: ApprovalActionMap.submit.tagType }
-      ],
-      recordList: [],
-      files: [{ name: '春耕补贴申请_AI生成版.docx' }]
-    },
-    {
-      id: 'MQ20260222002',
-      title: '养老资格认证上门服务预约',
-      department: '镇便民服务中心',
-      status: ApprovalStatusEnum.IN_PROGRESS,
-      createTime: formatDateTime(twoDaysAgo).full,
-      type: ApprovalTypeEnum.CIVIL_SERVICE,
-      author: '陈丽',
-      docNo: '便服〔2026〕03号',
-      mainSend: '镇民政办',
-      ccList: [],
-      chargeUsers: ['张主任'],
-      processList: [{ time: formatDateTime(twoDaysAgo).full, status: ApprovalStatusEnum.IN_PROGRESS, user: '陈丽', comment: '申请上门办理养老认证', type: ApprovalActionMap.submit.tagType }],
-      recordList: [],
-      files: [{ name: '老人名单.xlsx' }]
-    },
-    {
-      id: 'MQ20260221003',
-      title: '王家坳矛盾纠纷处置',
-      department: '王家坳网格',
-      status: ApprovalStatusEnum.IN_PROGRESS,
-      createTime: formatDateTime(threeDaysAgo).full,
-      type: ApprovalTypeEnum.SOCIAL_SECURITY,
-      author: '刘敏',
-      docNo: '王网〔2026〕12号',
-      mainSend: '镇综治办',
-      ccList: [],
-      chargeUsers: ['何芸'],
-      processList: [{ time: formatDateTime(threeDaysAgo).full, status: ApprovalStatusEnum.IN_PROGRESS, user: '刘敏', comment: '矛盾纠纷上报', type: ApprovalActionMap.submit.tagType }],
-      recordList: [],
-      files: []
-    },
-    {
-      id: 'MQ20260220004',
-      title: '村民饮水困难诉求处理',
-      department: '李家村村委会',
-      status: ApprovalStatusEnum.IN_PROGRESS,
-      createTime: formatDateTime(fourDaysAgo).full,
-      type: ApprovalTypeEnum.PEOPLE_AFFAIRS,
-      author: '张建国',
-      docNo: '李村发〔2026〕09号',
-      mainSend: '镇政府',
-      ccList: [],
-      chargeUsers: ['王副镇长'],
-      processList: [{ time: formatDateTime(fourDaysAgo).full, status: ApprovalStatusEnum.IN_PROGRESS, user: '张建国', comment: '村民饮水困难', type: ApprovalActionMap.submit.tagType }],
-      recordList: [],
-      files: []
-    }
-  ]
-}
-
-const approvalList = ref<ApprovalItem[]>(getMockApprovalList())
-const activeTab = ref(ApprovalTabEnum.ALL)
-const searchKeyword = ref('')
-const selectedApproval = ref<ApprovalItem | null>(null)
-const showCreateDrawer = ref(false)
-const detailRef = ref()
-
-// 筛选当前用户负责的事项
-const filteredList = computed(() => approvalList.value.filter(item => item.chargeUsers.includes(currentUser)))
-
-// 默认选中第一个
-watch(filteredList, (val) => {
-  if (val.length && !selectedApproval.value) selectedApproval.value = val[0]
-}, { immediate: true })
-
-const handleSelect = (item: ApprovalItem) => {
-  selectedApproval.value = item
-  if (detailRef.value?.$el) detailRef.value.$el.scrollTop = 0
-}
-
-// 创建新审批
-const handleCreateApproval = (formData: CreateApprovalForm & { files?: any[] }) => {
-  const now = new Date()
-  const newItem: ApprovalItem = {
-    id: generateApprovalId(),
-    title: formData.title,
-    department: '本级部门',
-    status: ApprovalStatusEnum.IN_PROGRESS,
-    createTime: formatTime(now),
-    type: formData.type,
-    author: currentUser,
-    docNo: generateDocNo(formData.type),
-    mainSend: '',
-    ccList: [],
-    chargeUsers: formData.chargeUsers,
-    processList: [{
-      time: formatTime(now),
-      status: ApprovalActionMap.submit.status,
-      user: currentUser,
-      comment: formData.content,
-      type: ApprovalActionMap.submit.tagType
-    }],
-    recordList: [],
-    files: formData.files || []
-  }
-  if (editingDraftId.value) deleteDraft(editingDraftId.value)
-  approvalList.value.unshift(newItem)
-  ElMessage.success(MESSAGE.SUBMIT_SUCCESS)
-  showCreateDrawer.value = false
-  resetCreateDrawer()
-}
-
-// 处理审批
-const handleApproval = (data: { id: string; result: ApprovalActionEnum; comment: string }) => {
-  const { id, result, comment } = data
-  if (!comment.trim()) {
-    ElMessage.warning(COMMON_TEXT.APPROVAL_REQUIRE_COMMENT)
-    return
-  }
-  const targetIndex = approvalList.value.findIndex(item => item.id === id)
-  if (targetIndex === -1) {
-    ElMessage.error(COMMON_TEXT.APPROVAL_NOT_FOUND)
-    return
-  }
-
-  const targetItem = approvalList.value[targetIndex]!
-  const actionConfig = ApprovalActionMap[result]!
-
-  const processItem: ApprovalProcess = {
-    time: formatTime(),
-    status: actionConfig.status,
-    user: currentUser,
-    comment,
-    type: actionConfig.tagType
-  }
-
-  targetItem.processList.push(processItem)
-  targetItem.status = actionConfig.status
-
-  if (selectedApproval.value?.id === id) {
-    selectedApproval.value = { ...selectedApproval.value, processList: targetItem.processList, status: targetItem.status }
-  }
-  ElMessage.success(MESSAGE.OPER_SUCCESS)
-}
+onMounted(() => {
+  fetchList()
+  loadDraftsFromLocal()
+})
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
 .approval-page {
   display: flex;
-  height: 100%;
+  height: calc(100vh - 60px);
   background: var(--white);
   position: relative;
 }
 
 .create-btn-wrapper {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
+  right: 40px;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+
+  .el-button {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: 44px;
+    padding: 0 24px;
+    border-radius: 22px;
+  }
 }
 </style>

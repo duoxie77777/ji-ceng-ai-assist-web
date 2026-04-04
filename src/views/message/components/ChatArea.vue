@@ -110,12 +110,11 @@ const onMessageAnimationEnd = (msgId: string) => {
     chatStore.clearMessageHighlight()
   }
 }
-const scrollToBottom = () => {
-  nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    }
-  })
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
 }
 
 watch([() => props.activeConversation, () => groupedMessages.value], () => {
@@ -123,14 +122,12 @@ watch([() => props.activeConversation, () => groupedMessages.value], () => {
 }, { immediate: true })
 
 const sendMessage = () => {
-  const trimmed = newMessage.value.trim()
-  if (!trimmed) {
+  if (!newMessage.value.trim()) {
     showEmptyTip.value = true
     return
   }
-  chatStore.sendMessage(trimmed)
+  chatStore.sendMessage(newMessage.value)
   newMessage.value = ''
-  scrollToBottom()
 }
 
 const triggerFileInput = () => {

@@ -142,7 +142,7 @@ export const menuList: MenuItem[] = [
     }
   },
   {
-    id: '8',
+    id: '9',
     path: '/profile',
     name: 'Profile',
     component: '/profile/index',

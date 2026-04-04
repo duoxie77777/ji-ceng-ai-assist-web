@@ -1,7 +1,7 @@
 import { get, post, del } from '@/utils/request'
 
 export interface Conversation {
-  id: string
+  id: number
   type: 'private' | 'group'
   creatorId: number
   creator?: any
@@ -17,8 +17,8 @@ export interface Conversation {
 }
 
 export interface Message {
-  id: string
-  conversationId: string
+  id: number
+  conversationId: number
   senderId: number
   sender?: any
   type: 'text' | 'image' | 'file' | 'audio' | 'video' | 'system'
@@ -54,49 +54,11 @@ export const messageApi = {
     participantId?: number
     chatGroupId?: number
   }) => {
-    // 确保所有 ID 都是数字类型
-    const requestData = {
-      ...data,
-      creatorId: Number(data.creatorId),
-      participantId: data.participantId ? Number(data.participantId) : undefined,
-      chatGroupId: data.chatGroupId ? Number(data.chatGroupId) : undefined
-    }
-    console.error('=== [API 调试] 创建会话请求 ===')
-    console.error('请求数据:', requestData)
-    console.error('creatorId 类型:', typeof requestData.creatorId, '值:', requestData.creatorId)
-    console.error('participantId 类型:', typeof requestData.participantId, '值:', requestData.participantId)
-    console.error('===========================')
-    
-    // 验证 ID 是否有效
-    if (!requestData.creatorId || requestData.creatorId <= 0) {
-      console.error('❌ 错误：creatorId 无效！', requestData.creatorId)
-      return Promise.reject(new Error('创建者 ID 无效'))
-    }
-    if (requestData.participantId && requestData.participantId <= 0) {
-      console.error('❌ 错误：participantId 无效！', requestData.participantId)
-      return Promise.reject(new Error('参与者 ID 无效'))
-    }
-    
-    return post<Conversation>('/message/conversations', requestData)
+    return post<Conversation>('/message/conversations', data)
   },
 
-  deleteConversation: (id: string | number, userId: number) => {
-    // 确保 ID 是纯数字
-    const numericId = typeof id === 'string' 
-      ? parseInt(id.replace('conv-', ''), 10)
-      : Number(id)
-    
-    // 确保 userId 是数字
-    const numericUserId = Number(userId)
-    
-    const requestData = { userId: numericUserId }
-    console.log('[API] 删除会话请求:', {
-      url: `/message/conversations/${numericId}`,
-      method: 'DELETE',
-      data: requestData
-    })
-    
-    return del<void>(`/message/conversations/${numericId}`, requestData)
+  deleteConversation: (id: number, userId: number) => {
+    return del<void>(`/message/conversations/${id}`, { userId })
   },
 
   getConversationDetail: (id: string | number) =>

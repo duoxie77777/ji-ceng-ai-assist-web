@@ -1,8 +1,13 @@
 <template>
   <div class="settings-sidebar">
     <div class="menu-list">
-      <div v-for="item in MENU_ITEMS" :key="item.key" class="menu-item" :class="{ active: activeMenu === item.key }"
-        @click="handleSelect(item.key)">
+      <div 
+        v-for="item in MENU_ITEMS" 
+        :key="item.key" 
+        class="menu-item" 
+        :class="{ active: activeMenu === item.key }"
+        @click="handleSelect(item.key)"
+      >
         <el-icon class="menu-icon">
           <component :is="item.icon" />
         </el-icon>
@@ -14,13 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import { User, Setting, Message, QuestionFilled } from '@element-plus/icons-vue'
+import { User, Lock, Setting, Message, QuestionFilled } from '@element-plus/icons-vue'
 import { MENU_ITEMS } from '../utils/personal'
 
 defineProps<{ activeMenu: string; unreadCount?: number }>()
 const emit = defineEmits(['update:activeMenu'])
-const handleSelect = (idx: string) => {
-  emit('update:activeMenu', idx)
+
+const handleSelect = (key: string) => {
+  emit('update:activeMenu', key)
 }
 </script>
 
@@ -31,6 +37,7 @@ const handleSelect = (idx: string) => {
   border: 1px solid var(--gray-200);
   padding: 12px 0;
   width: 100%;
+  height: fit-content;
 }
 
 .menu-list {

@@ -1,6 +1,7 @@
 // 菜单配置
 export const MENU_ITEMS = [
   { key: 'profile', label: '个人档案', icon: 'User' },
+  { key: 'password', label: '修改密码', icon: 'Lock' },
   { key: 'system', label: '系统设置', icon: 'Setting' },
   { key: 'message', label: '消息中心', icon: 'Message' },
   { key: 'help', label: '帮助与反馈', icon: 'QuestionFilled' }
@@ -29,17 +30,13 @@ export const UI_TEXT = {
 
 // 用户信息类型
 export interface UserInfo {
-  avatar: string
-  name: string
-  username: string
-  email: string
-  phone: string
-  province: string
-  city: string
-  address: string
-  zipCode: string
-  position: string
-  department: string
+  id?: number
+  avatar?: string
+  username?: string
+  email?: string
+  phone?: string
+  department?: string
+  position?: string
 }
 
 // 系统设置类型
