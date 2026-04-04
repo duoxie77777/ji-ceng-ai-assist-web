@@ -2,7 +2,7 @@ import type { MessageType, FileType, SearchResultType } from './type'
 
 // 用户信息（通讯录好友结构）
 export interface User {
-  id: string
+  id: string | number
   name: string
   avatar: string
   email: string
@@ -22,7 +22,7 @@ export interface User {
 // 单条消息
 export interface Message {
   id: string
-  senderId: string
+  senderId: string | number
   senderName: string
   senderAvatar: string
   content: string
@@ -41,7 +41,7 @@ export interface Message {
 
 // 会话
 export interface Conversation {
-  id: string
+  id: string | number
   participant: User
   lastMessage: string
   lastMessageTime: string

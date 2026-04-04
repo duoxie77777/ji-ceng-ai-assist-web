@@ -122,6 +122,7 @@ const deleteTask = (id: number) => {
   display: flex;
   flex-direction: column;
   gap: 32px;
+  min-height: 280px;
 
   .section {
     .section-header {

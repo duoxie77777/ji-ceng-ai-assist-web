@@ -50,6 +50,7 @@ const completedCount = computed(() => approvalStore.completedCount)
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 280px;
 }
 
 .stat-section {

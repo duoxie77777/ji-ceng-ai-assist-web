@@ -28,12 +28,12 @@ const activeAttachments = ref([
   { id: 'att-2', name: 'Purchase order receipt', type: FileType.PDF, url: '#' },
 ]);
 
-onMounted(() => {
-  chatStore.initChatData();
-  // 处理通讯录跳转过来的 userId
-  const userId = route.query.userId as string;
-  if (userId) {
-    chatStore.activateOrCreateConversation(userId);
+onMounted(async () => {
+  await chatStore.initChatData();
+  // 处理通讯录跳转过来的 friendId
+  const friendId = route.query.friendId as string;
+  if (friendId) {
+    await chatStore.activateOrCreateConversation(friendId);
   }
 });
 </script>

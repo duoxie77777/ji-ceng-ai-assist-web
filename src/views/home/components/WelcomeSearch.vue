@@ -38,6 +38,7 @@ const searchTag = (tag: string) => {
   background: var(--white);
   border: 1px solid var(--gray-200);
   border-radius: 8px;
+  min-height: 280px;
 }
 
 h1 {

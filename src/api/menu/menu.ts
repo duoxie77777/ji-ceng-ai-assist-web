@@ -1,6 +1,5 @@
-import { get } from '@/utils/request'
+import { menuList } from '../../../mock/menu'
 
-// 菜单项类型定义
 export interface MenuItem {
   id: string
   path: string
@@ -14,8 +13,6 @@ export interface MenuItem {
   children?: MenuItem[]
 }
 
-// 菜单 API
 export const menuApi = {
-  // 获取菜单列表
-  getMenuList: () => get<MenuItem[]>('/menu/list')
+  getMenuList: () => Promise.resolve(menuList)
 }

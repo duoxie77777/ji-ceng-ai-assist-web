@@ -21,9 +21,9 @@
         <div v-for="menu in menuList" :key="menu.path" :class="['menu-item', { active: isMenuActive(menu.path) }]"
           @click="navigateTo(menu.path)">
           <span class="menu-icon">
-            <SvgIcon v-if="menu.meta.icon" :name="menu.meta.icon" :color="isMenuActive(menu.path) ? '#ffffff' : ''" />
+            <SvgIcon v-if="menu.meta?.icon || menu.icon" :name="menu.meta?.icon || menu.icon" :color="isMenuActive(menu.path) ? '#ffffff' : ''" />
           </span>
-          <span v-if="!isCollapsed" class="menu-title">{{ menu.meta.title }}</span>
+          <span v-if="!isCollapsed" class="menu-title">{{ menu.meta?.title || menu.name }}</span>
         </div>
       </nav>
 
@@ -63,7 +63,7 @@
           <!-- 用户信息 -->
           <div class="user-section" @click="toggleUserMenu">
             <div class="user-avatar">{{ userInitial }}</div>
-            <span class="user-name">{{ userInfo?.username || '用户' }}</span>
+            <span class="user-name">{{ userStore.userInfo?.username || '用户' }}</span>
             <span class="dropdown-icon">▼</span>
           </div>
 
@@ -72,8 +72,8 @@
             <div class="user-info-header">
               <div class="user-avatar-large">{{ userInitial }}</div>
               <div class="user-details">
-                <div class="username">{{ userInfo?.username || '用户' }}</div>
-                <div class="user-email">{{ userInfo?.email || 'user@example.com' }}</div>
+                <div class="username">{{ userStore.userInfo?.username || '用户' }}</div>
+                <div class="user-email">{{ userStore.userInfo?.email || 'user@example.com' }}</div>
               </div>
             </div>
             <div class="menu-divider"></div>
@@ -108,34 +108,27 @@ import { menuApi } from '@/api/menu/menu'
 import { resetPermissionGuard } from '@/router/guards/permission'
 import type { MenuItem } from '@/api/menu/menu'
 import { ElMessageBoxPro } from '@/components/custom/ElMessageBoxPro'
-// import { getFormattedCurrentTime } from "@/utils/time/timeUtils"
 import { useThemeStore } from '@/store'
+import { useUserStore } from '@/store/modules/user'
+
 const router = useRouter()
 const route = useRoute()
 const themeStore = useThemeStore()
+const userStore = useUserStore()
 
 // 状态
 const isCollapsed = ref(false)
 const showUserMenu = ref(false)
-const userInfo = ref<any>(null)
 const menuList = ref<MenuItem[]>([])
-
-
-// 水印内容(用户姓名+时间)
-// const watermarkContent = ref(['admin', getFormattedCurrentTime()])
-// const watermarkFont = reactive({
-//   color: 'rgba(0, 0, 0, .15)',
-//   fontSize: 14,
-// })
 
 // 计算属性
 const userInitial = computed(() => {
-  return userInfo.value?.username?.charAt(0).toUpperCase() || 'U'
+  return userStore.userInfo?.username?.charAt(0).toUpperCase() || 'U'
 })
 
 const currentPageTitle = computed(() => {
   const currentMenu = menuList.value.find(menu => route.path.startsWith(menu.path))
-  return currentMenu?.meta.title || '首页'
+  return currentMenu?.meta?.title || currentMenu?.name || '首页'
 })
 
 // 方法
@@ -157,11 +150,7 @@ const navigateTo = (path: string) => {
 
 const handleLogout = async () => {
   try {
-    await ElMessageBoxPro.confirm({
-      message: '确定要退出登录吗？'
-    })
-    await userApi.logout()
-    localStorage.removeItem('token')
+    await userStore.logout()
     resetPermissionGuard()
     router.push('/login')
   } catch (error: any) {
@@ -174,15 +163,15 @@ const handleLogout = async () => {
 
 // 加载数据
 onMounted(async () => {
+  userStore.initUserInfo()
+  
   try {
-    // 加载用户信息
-    userInfo.value = await userApi.getInfo()
-
-    // 加载菜单数据
     const menus = await menuApi.getMenuList()
-    menuList.value = menus
+    if (menus && menus.length > 0) {
+      menuList.value = menus
+    }
   } catch (error) {
-    console.error('加载数据失败:', error)
+    console.error('加载菜单数据失败:', error)
   }
 })
 

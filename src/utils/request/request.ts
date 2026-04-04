@@ -28,8 +28,11 @@ export function put<T>(url: string, data?: object, config?: RequestConfig): Prom
     return request.put(url, data, config)
 }
 
-export function del<T>(url: string, params?: object, config?: RequestConfig): Promise<T> {
-    return request.delete(url, { params, ...config })
+export function del<T>(url: string, data?: object, config?: RequestConfig): Promise<T> {
+    return request.delete(url, { 
+        data: data || {}, 
+        ...config 
+    })
 }
 
 export function patch<T>(url: string, data?: object, config?: RequestConfig): Promise<T> {

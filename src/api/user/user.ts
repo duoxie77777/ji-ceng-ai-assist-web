@@ -1,9 +1,14 @@
-import { get, post } from '@/utils/request'
-// 类型
+import { get, post, put } from '@/utils/request'
+
 export interface UserInfo {
   id: number
   username: string
-  avatar: string
+  avatar?: string
+  email?: string
+  phone?: string
+  department?: string
+  position?: string
+  createdAt?: string
 }
 
 export interface LoginParams {
@@ -12,21 +17,48 @@ export interface LoginParams {
 }
 
 export interface LoginResult {
-  token: string
-  expires: number
+  accessToken: string
+  refreshToken: string
+  user: UserInfo
 }
 
-// API
+export interface RefreshTokenParams {
+  refreshToken: string
+}
+
+export interface RefreshTokenResult {
+  accessToken: string
+  refreshToken: string
+}
+
 export const userApi = {
-  // 登录
   login: (data: LoginParams) =>
     post<LoginResult>('/auth/login', data, { skipAuth: true }),
 
-  // 获取用户信息
-  getInfo: () =>
-    get<UserInfo>('/user/info'),
+  register: (data: LoginParams & { email?: string; phone?: string; department?: string; position?: string }) => {
+    // 生成默认头像（使用用户名首字母）
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.username)}&background=random&color=fff&size=200`
+    return post<LoginResult>('/auth/register', {
+      ...data,
+      avatar: defaultAvatar
+    }, { skipAuth: true })
+  },
 
-  // 退出登录
+  refreshToken: (refreshToken: string) =>
+    post<RefreshTokenResult>('/auth/refresh', { refreshToken }),
+
   logout: () =>
     post<void>('/auth/logout'),
+
+  getUserInfo: () =>
+    get<UserInfo>('/user/info'),
+
+  updateUserInfo: (data: Partial<UserInfo>) =>
+    put<UserInfo>('/user/info', data),
+
+  getUserById: (id: number) =>
+    get<UserInfo>(`/user/${id}`),
+
+  searchUsers: (keyword: string) =>
+    get<UserInfo[]>('/user/search', { keyword }),
 }

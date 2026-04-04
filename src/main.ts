@@ -14,6 +14,8 @@ import './assets/iconfont/iconfont.js'
 import 'element-plus/es/components/message-box/style/css'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/base.css'
+// 引入 Element Plus 自定义样式
+import './styles/element-plus.less'
 
 // 引入 SvgIcon 组件
 import SvgIcon from './components/SvgIcon/SvgIcon.vue'

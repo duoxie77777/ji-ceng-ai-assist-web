@@ -2,11 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { UserInfo, LoginParams, LoginResponse } from '@/types/user'
 import { userApi } from '@/api/user/user'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 import { ElMessageBoxPro } from '@/components/custom/ElMessageBoxPro'
 
-// Token存储键名
-const TOKEN_KEY = 'access_token'
+// Token存储键名（与 request 拦截器保持一致）
+const TOKEN_KEY = 'token'
 const REFRESH_TOKEN_KEY = 'refresh_token'
 const USER_INFO_KEY = 'user_info'
 
@@ -91,36 +91,38 @@ export const useUserStore = defineStore('user', () => {
   // 用户登录
   const login = async (params: LoginParams): Promise<LoginResponse> => {
     loading.value = true
-
+    
     try {
       const response = await userApi.login(params)
 
-      if (response.success && response.token) {
-        // 保存认证信息
-        await setAuth(response)
-
-        // 获取用户信息
-        if (response.userInfo) {
-          userInfo.value = response.userInfo
-          saveToLocalStorage()
-        } else {
-          // 如果没有用户信息，尝试获取
-          await getUserInfo()
+      if (response && response.accessToken) {
+        token.value = response.accessToken
+        refreshToken.value = response.refreshToken || ''
+        
+        if (response.user) {
+          userInfo.value = response.user
         }
+        
+        saveToLocalStorage()
 
         return {
           success: true,
           message: '登录成功',
-          ...response
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          user: response.user
         }
       } else {
-        throw new Error(response.message || '登录失败')
+        throw new Error('登录失败')
       }
     } catch (error: any) {
       console.error('登录失败:', error)
       return {
         success: false,
-        message: error.message || '登录失败，请检查用户名和密码'
+        message: error.message || '登录失败，请检查用户名和密码',
+        accessToken: '',
+        refreshToken: '',
+        user: {} as UserInfo
       }
     } finally {
       loading.value = false
@@ -142,16 +144,19 @@ export const useUserStore = defineStore('user', () => {
     }
 
     try {
-      // 调用登出API
+      // 调用登出 API
       await userApi.logout()
     } catch (error) {
-      console.error('登出API调用失败:', error)
+      console.error('登出 API 调用失败:', error)
     } finally {
-      // 无论API是否成功，都清除本地认证信息
+      // 无论 API 是否成功，都清除本地认证信息
       clearAuth()
 
+      // 显示退出成功提示
+      const { ElMessage } = await import('element-plus')
+      ElMessage.success('退出成功')
+
       // 跳转到登录页
-      const router = useRouter()
       router.push('/login')
     }
   }
@@ -160,15 +165,10 @@ export const useUserStore = defineStore('user', () => {
   const getUserInfo = async () => {
     try {
       loading.value = true
-      const response = await userApi.getUserInfo()
-
-      if (response.success && response.data) {
-        userInfo.value = response.data
-        saveToLocalStorage()
-        return response.data
-      } else {
-        throw new Error(response.message || '获取用户信息失败')
-      }
+      const data = await userApi.getUserInfo()
+      userInfo.value = data
+      saveToLocalStorage()
+      return data
     } catch (error: any) {
       console.error('获取用户信息失败:', error)
       throw error
@@ -181,15 +181,10 @@ export const useUserStore = defineStore('user', () => {
   const updateUserInfo = async (info: Partial<UserInfo>) => {
     try {
       loading.value = true
-      const response = await userApi.updateUserInfo(info)
-
-      if (response.success && response.data) {
-        userInfo.value = { ...userInfo.value, ...response.data }
-        saveToLocalStorage()
-        return response.data
-      } else {
-        throw new Error(response.message || '更新用户信息失败')
-      }
+      const data = await userApi.updateUserInfo(info)
+      userInfo.value = { ...userInfo.value, ...data }
+      saveToLocalStorage()
+      return data
     } catch (error: any) {
       console.error('更新用户信息失败:', error)
       throw error
@@ -207,8 +202,8 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await userApi.refreshToken(refreshToken.value)
 
-      if (response.success && response.token) {
-        token.value = response.token
+      if (response && response.accessToken) {
+        token.value = response.accessToken
         if (response.refreshToken) {
           refreshToken.value = response.refreshToken
         }
@@ -226,11 +221,11 @@ export const useUserStore = defineStore('user', () => {
 
   // 设置认证信息
   const setAuth = async (authData: LoginResponse) => {
-    token.value = authData.token || ''
+    token.value = authData.accessToken || ''
     refreshToken.value = authData.refreshToken || ''
 
-    if (authData.expiresIn) {
-      tokenExpireTime.value = Date.now() + (authData.expiresIn * 1000)
+    if (authData.user) {
+      userInfo.value = authData.user
     }
 
     saveToLocalStorage()
@@ -307,6 +302,7 @@ export const useUserStore = defineStore('user', () => {
     refreshAuthToken,
     setAuth,
     clearAuth,
+    saveToLocalStorage,
     checkTokenValid,
     initUserInfo
   }

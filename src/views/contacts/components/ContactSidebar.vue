@@ -1,9 +1,9 @@
 <template>
   <aside class="sidebar">
     <div class="user-info">
-      <el-avatar :size="48" src="https://cube.elemecdn.com/0/88/03b01d2d5f2b9e2e7d5f8e2e7d5f8e2e.png" />
+      <el-avatar :size="48" :src="userInfo?.avatar || defaultAvatar" />
       <div class="user-detail">
-        <div class="user-name">杨政通</div>
+        <div class="user-name">{{ userInfo?.username || '加载中...' }}</div>
         <div class="user-status">在线</div>
       </div>
     </div>
@@ -15,7 +15,7 @@
           <component :is="item.icon" />
         </el-icon>
         <span class="menu-label">{{ item.label }}</span>
-        <el-badge :value="item.badge === BadgeType.FRIEND ? friendCount : newFriendCount"
+        <el-badge v-if="item.badge" :value="item.badge === BadgeType.FRIEND ? friendCount : newFriendCount"
           :hidden="item.badge === BadgeType.FRIEND ? friendCount === 0 : newFriendCount === 0"
           :type="item.badge === BadgeType.NEW_FRIEND ? 'danger' : 'primary'" />
       </div>
@@ -40,11 +40,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { MenuType, BadgeType } from '../utils/contact'
 import {
   User, UserFilled, ChatDotRound, Collection,
   Cpu, Briefcase, Service, Plus
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/modules/user'
+import { userApi } from '@/api/user/user'
 
 defineProps<{
   activeMenu: MenuType
@@ -57,6 +60,20 @@ const emit = defineEmits<{
   (e: 'addFriend'): void
 }>()
 
+const userStore = useUserStore()
+const userInfo = ref(userStore.userInfo)
+const defaultAvatar = 'https://cube.elemecdn.com/0/88/03b01d2d5f2b9e2e7d5f8e2e7d5f8e2e.png'
+
+onMounted(async () => {
+  if (!userInfo.value) {
+    try {
+      userInfo.value = await userApi.getUserInfo()
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+  }
+})
+
 const menuItems = [
   { key: MenuType.FRIENDS, label: '好友', icon: User, badge: BadgeType.FRIEND },
   { key: MenuType.NEW_FRIENDS, label: '好友申请', icon: UserFilled, badge: BadgeType.NEW_FRIEND },
@@ -65,7 +82,7 @@ const menuItems = [
 ]
 
 const quickEntries = [
-  { name: 'AI助手', icon: Cpu },
+  { name: 'AI 助手', icon: Cpu },
   { name: '工作台', icon: Briefcase },
   { name: '服务中心', icon: Service }
 ]

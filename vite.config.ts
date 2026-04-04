@@ -18,7 +18,7 @@ export default defineConfig(({ command, mode }) => {
       vue(),
       viteMockServe({
         mockPath: 'mock',           // mock 文件目录
-        enable: command === 'serve', // 仅开发环境启用
+        enable: false, // 禁用 mock，其他接口对接真实后端
         logger: true,               // 控制台显示请求日志
       }),
       AutoImport({
@@ -32,6 +32,17 @@ export default defineConfig(({ command, mode }) => {
       alias: {
         "@": path.resolve(__dirname, "src")
       }
+    },
+    server: {
+      port: 5173,  // 固定端口为 5173
+      strictPort: true,  // 如果端口被占用则直接失败
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3000',  // 后端 API 服务器地址
+          changeOrigin: true,
+          // rewrite: (path) => path.replace(/^\/api/, ''),  // 如果需要去掉 /api 前缀
+        },
+      },
     },
     // 定义全局常量
     define: {

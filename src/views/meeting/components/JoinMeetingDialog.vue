@@ -1,52 +1,92 @@
 <template>
-  <el-dialog 
-    :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
-    title="加入会议" 
-    width="400px"
+  <el-dialog
+    v-model="visible"
+    title="加入会议"
+    width="500px"
+    @close="handleClose"
   >
-    <el-form label-position="top">
-      <el-form-item label="会议号">
-        <el-input v-model="meetingId" placeholder="请输入会议号" />
+    <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+      <el-form-item label="会议号" prop="roomId">
+        <el-input v-model="form.roomId" placeholder="请输入会议号" />
       </el-form-item>
-      <el-form-item label="您的名称">
-        <el-input v-model="userName" placeholder="请输入您的名称" />
+      
+      <el-form-item label="昵称" prop="username">
+        <el-input v-model="form.username" placeholder="请输入您的昵称" />
       </el-form-item>
     </el-form>
+    
     <template #footer>
-      <el-button @click="$emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" @click="handleJoin">加入会议</el-button>
+      <span class="link-text" @click="handleClose">取消</span>
+      <span class="link-text" @click="handleConfirm">加入</span>
     </template>
   </el-dialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
 
-const props = defineProps<{
-  visible: boolean
-}>()
+interface Props {
+  modelValue: boolean
+}
 
-const emit = defineEmits(['update:visible', 'joined'])
+interface Emits {
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'success', roomId: string): void
+}
 
-const meetingId = ref('')
-const userName = ref('')
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
 
-watch(() => props.visible, (val) => {
-  if (!val) {
-    meetingId.value = ''
-    userName.value = ''
-  }
+const visible = ref(false)
+const formRef = ref()
+
+const form = ref({
+  roomId: '',
+  username: ''
 })
 
-const handleJoin = () => {
-  if (!meetingId.value) {
-    ElMessage.warning('请输入会议号')
-    return
+const rules = {
+  roomId: [{ required: true, message: '请输入会议号', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入昵称', trigger: 'blur' }]
+}
+
+watch(() => props.modelValue, (val) => {
+  visible.value = val
+})
+
+watch(visible, (val) => {
+  emit('update:modelValue', val)
+})
+
+const handleClose = () => {
+  visible.value = false
+  resetForm()
+}
+
+const handleConfirm = async () => {
+  try {
+    await formRef.value?.validate()
+    emit('success', form.value.roomId)
+  } catch (error) {
+    console.error('加入会议失败:', error)
   }
-  emit('joined', { meetingId: meetingId.value, userName: userName.value })
-  emit('update:visible', false)
-  ElMessage.success(`正在加入会议: ${meetingId.value}`)
+}
+
+const resetForm = () => {
+  form.value = {
+    roomId: '',
+    username: ''
+  }
+  formRef.value?.resetFields()
 }
 </script>
+
+<style scoped>
+.el-dialog {
+  border-radius: 8px;
+}
+
+.el-form-item {
+  margin-bottom: 20px;
+}
+</style>

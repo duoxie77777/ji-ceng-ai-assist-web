@@ -13,10 +13,6 @@
       </div>
       <h2 class="user-name">{{ activeUser.name }}</h2>
       <p class="user-email">{{ activeUser.email }}</p>
-      <div class="contact-actions">
-        <button class="action-btn call-btn"><svg-icon name="dianhua" size="24" /></button>
-        <button class="action-btn video-btn"><svg-icon name="shipindianhua" size="24" /></button>
-      </div>
     </div>
 
     <div class="info-card">

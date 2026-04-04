@@ -93,6 +93,7 @@ const handleTaskClick = (taskName: string) => {
   border-radius: 8px;
   background: var(--white);
   border: 1px solid var(--gray-200);
+  min-height: 280px;
 }
 
 .card-header {

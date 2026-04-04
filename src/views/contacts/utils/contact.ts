@@ -44,12 +44,7 @@ export const DETAIL_FIELDS = [
 
 // ==================== 添加好友表单字段配置 ====================
 export const ADD_FRIEND_FORM_FIELDS = [
-  { prop: 'name', label: '姓名', placeholder: '请输入姓名' },
-  { prop: 'position', label: '职务', placeholder: '请输入职务' },
-  { prop: 'company', label: '组织', placeholder: '请输入组织' },
-  { prop: 'department', label: '部门', placeholder: '请输入部门' },
-  { prop: 'mobile', label: '手机号', placeholder: '请输入手机号' },
-  { prop: 'email', label: '邮箱', placeholder: '请输入邮箱' }
+  { prop: 'keyword', label: '搜索', placeholder: '请输入用户名/邮箱/手机号' }
 ] as const
 
 // ==================== 辅助函数：获取字段值，空值显示默认文本 ====================

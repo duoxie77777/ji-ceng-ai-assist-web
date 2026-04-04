@@ -8,7 +8,7 @@ export const menuList: MenuItem[] = [
     name: 'Home',
     component: '/home/index',
     meta: {
-      title: '工作台',
+      title: '首页',
       icon: 'gongzuotai',
       keepAlive: true
     }

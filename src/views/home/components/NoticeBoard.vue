@@ -33,6 +33,7 @@ const notices = store.notices
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 280px;
 }
 
 .card-header {

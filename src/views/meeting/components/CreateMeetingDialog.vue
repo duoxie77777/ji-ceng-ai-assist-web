@@ -1,121 +1,179 @@
 <template>
-  <el-dialog 
-    :model-value="visible"
-    @update:model-value="$emit('update:visible', $event)"
-    title="发起会议" 
-    width="520px"
-    :close-on-click-modal="false"
+  <el-dialog
+    v-model="visible"
+    title="预定会议"
+    width="600px"
+    @close="handleClose"
   >
-    <el-form :model="form" label-position="top" class="meeting-form">
-      <el-form-item label="会议主题" required>
-        <el-input v-model="form.title" placeholder="请输入会议主题" />
+    <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+      <el-form-item label="会议标题" prop="title">
+        <el-input v-model="form.title" placeholder="请输入会议标题" />
       </el-form-item>
-      <el-form-item label="会议类型">
-        <el-radio-group v-model="form.type">
-          <el-radio label="normal">普通会议</el-radio>
-          <el-radio label="important">重要会议</el-radio>
-          <el-radio label="training">培训会议</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="会议时间" required>
-        <el-date-picker
-          v-model="form.dateRange"
-          type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-          style="width: 100%"
-        />
-      </el-form-item>
-      <el-form-item label="参会人员">
-        <el-select 
-          v-model="form.participants" 
-          multiple 
-          filterable 
-          placeholder="请选择参会人员"
-          style="width: 100%"
-        >
-          <el-option label="张三" value="zhangsan" />
-          <el-option label="李四" value="lisi" />
-          <el-option label="王五" value="wangwu" />
-          <el-option label="赵六" value="zhaoliu" />
-          <el-option label="钱七" value="qianqi" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="会议描述">
+      
+      <el-form-item label="会议描述" prop="description">
         <el-input 
           v-model="form.description" 
           type="textarea" 
           :rows="3"
-          placeholder="请输入会议描述（可选）"
+          placeholder="请输入会议描述"
         />
       </el-form-item>
+      
+      <el-form-item label="开始时间" prop="startTime">
+        <el-date-picker
+          v-model="form.startTime"
+          type="datetime"
+          placeholder="请选择开始时间"
+          format="YYYY-MM-DD HH:mm"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          :disabled-date="disabledDate"
+        />
+      </el-form-item>
+      
+      <el-form-item label="结束时间" prop="endTime">
+        <el-date-picker
+          v-model="form.endTime"
+          type="datetime"
+          placeholder="请选择结束时间"
+          format="YYYY-MM-DD HH:mm"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          :disabled-date="disabledDate"
+        />
+      </el-form-item>
+      
       <el-form-item label="会议设置">
-        <div class="meeting-settings">
-          <el-checkbox v-model="form.enableVideo">开启视频</el-checkbox>
-          <el-checkbox v-model="form.enableRecord">自动录制</el-checkbox>
-          <el-checkbox v-model="form.enableWaitingRoom">开启等候室</el-checkbox>
-        </div>
+        <el-checkbox v-model="form.enableScreenShare">启用屏幕共享</el-checkbox>
+        <el-checkbox v-model="form.enableSubtitle">启用字幕</el-checkbox>
+        <el-checkbox v-model="form.isRecording">录制会议</el-checkbox>
+      </el-form-item>
+      
+      <el-form-item label="参与人员">
+        <el-select
+          v-model="form.participantIds"
+          multiple
+          placeholder="请选择参与人员"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="user in users"
+            :key="user.id"
+            :label="user.username"
+            :value="user.id"
+          />
+        </el-select>
       </el-form-item>
     </el-form>
+    
     <template #footer>
-      <el-button @click="$emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" @click="handleCreate">确认创建</el-button>
+      <span class="link-text" @click="handleClose">取消</span>
+      <span class="link-text" @click="handleConfirm">确定</span>
     </template>
   </el-dialog>
 </template>
 
-<script lang="ts" setup>
-import { reactive, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { useMeetingStore } from '@/store/modules/meeting/useMeetingStore'
+import { useUserStore } from '@/store/modules/user'
 
-const props = defineProps<{
-  visible: boolean
-}>()
+interface Props {
+  modelValue: boolean
+}
 
-const emit = defineEmits(['update:visible', 'created'])
+interface Emits {
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'success'): void
+}
 
-const form = reactive({
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const meetingStore = useMeetingStore()
+const userStore = useUserStore()
+
+const visible = ref(false)
+const formRef = ref()
+
+const form = ref({
   title: '',
-  type: 'normal',
-  dateRange: [],
-  participants: [],
   description: '',
-  enableVideo: true,
-  enableRecord: false,
-  enableWaitingRoom: false
+  startTime: '',
+  endTime: '',
+  enableScreenShare: true,
+  enableSubtitle: false,
+  isRecording: false,
+  participantIds: [] as string[]
 })
 
-watch(() => props.visible, (val) => {
-  if (!val) {
-    form.title = ''
-    form.type = 'normal'
-    form.dateRange = []
-    form.participants = []
-    form.description = ''
-    form.enableVideo = true
-    form.enableRecord = false
-    form.enableWaitingRoom = false
-  }
+const rules = {
+  title: [{ required: true, message: '请输入会议标题', trigger: 'blur' }],
+  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
+  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
+}
+
+const users = ref([
+  { id: '1', username: '张三' },
+  { id: '2', username: '李四' },
+  { id: '3', username: '王五' }
+])
+
+watch(() => props.modelValue, (val) => {
+  visible.value = val
 })
 
-const handleCreate = () => {
-  if (!form.title) {
-    ElMessage.warning('请输入会议主题')
-    return
+watch(visible, (val) => {
+  emit('update:modelValue', val)
+})
+
+const disabledDate = (time: Date) => {
+  return time.getTime() < Date.now() - 24 * 60 * 60 * 1000
+}
+
+const handleClose = () => {
+  visible.value = false
+  resetForm()
+}
+
+const handleConfirm = async () => {
+  try {
+    await formRef.value?.validate()
+    
+    await meetingStore.createMeeting({
+      ...form.value,
+      hostId: userStore.userInfo?.id || 0
+    })
+    
+    emit('success')
+  } catch (error) {
+    console.error('创建会议失败:', error)
   }
-  emit('created', { ...form })
-  emit('update:visible', false)
-  ElMessage.success('会议创建成功')
+}
+
+const resetForm = () => {
+  form.value = {
+    title: '',
+    description: '',
+    startTime: '',
+    endTime: '',
+    enableScreenShare: true,
+    enableSubtitle: false,
+    isRecording: false,
+    participantIds: []
+  }
+  formRef.value?.resetFields()
 }
 </script>
 
-<style scoped lang="less">
-.meeting-form {
-  .meeting-settings {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
+<style scoped>
+.el-dialog {
+  border-radius: 8px;
+}
+
+.el-form-item {
+  margin-bottom: 20px;
+}
+
+.el-checkbox {
+  margin-right: 16px;
 }
 </style>

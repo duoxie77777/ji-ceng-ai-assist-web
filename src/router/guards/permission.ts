@@ -2,6 +2,9 @@ import type { Router } from 'vue-router'
 import { menuApi } from '@/api/menu/menu'
 import { transformMenuToRoutes, addDynamicRoutes } from '@/router/utils/dynamicRoutes'
 
+// Token 存储键名（与 request 拦截器保持一致）
+const TOKEN_KEY = 'token'
+
 // 白名单路由（无需登录即可访问）
 const WHITE_LIST = ['/login', '/error/404', '/error/403']
 
@@ -15,7 +18,7 @@ let isRoutesLoaded = false
 export function setupPermissionGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
     // 获取 token
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem(TOKEN_KEY)
 
     // 白名单路由直接放行
     if (WHITE_LIST.includes(to.path)) {
@@ -48,7 +51,7 @@ export function setupPermissionGuard(router: Router) {
       } catch (error) {
         console.error('加载动态路由失败:', error)
         // 清除 token 并跳转到登录页
-        localStorage.removeItem('token')
+        localStorage.removeItem(TOKEN_KEY)
         isRoutesLoaded = false
         next({
           path: '/login',

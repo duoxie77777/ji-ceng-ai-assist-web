@@ -47,7 +47,7 @@
           <!-- 好友列表 -->
           <ContactListView v-if="activeMenu === MenuType.FRIENDS" :type="ListType.FRIENDS" :list="friends"
             :search-keyword="searchKeyword" @detail="openFriendDetail" @delete="deleteFriend" @chat="chatWithFriend"
-            @call="callFriend" @add-to-group="openAddToGroupDialog" />
+            @add-to-group="openAddToGroupDialog" />
 
           <!-- 自定义分组 -->
           <div v-else-if="activeMenu === MenuType.CUSTOM_GROUPS" class="custom-groups-container">
@@ -95,15 +95,72 @@
     </div>
 
     <!-- 添加好友弹窗 -->
-    <el-dialog v-model="addFriendDialogVisible" title="添加好友" width="500px">
-      <el-form :model="newFriendForm" :rules="friendFormRules" ref="friendFormRef" label-width="80px">
-        <el-form-item v-for="field in ADD_FRIEND_FORM_FIELDS" :key="field.prop" :label="field.label" :prop="field.prop">
-          <el-input v-model="newFriendForm[field.prop]" :placeholder="field.placeholder" />
-        </el-form-item>
-      </el-form>
+    <el-dialog v-model="addFriendDialogVisible" title="添加好友" width="600px">
+      <div class="add-friend-content">
+        <div class="search-box">
+          <el-input 
+            v-model="searchKeywordForAdd" 
+            placeholder="搜索用户名、邮箱或手机号" 
+            prefix-icon="Search"
+            clearable
+            @input="handleSearchUsers"
+          />
+        </div>
+        
+        <div v-loading="searchLoading" class="search-results-container">
+          <div v-if="searchResults.length > 0" class="search-results">
+            <div 
+              v-for="user in searchResults" 
+              :key="user.id" 
+              :class="['search-result-item', { selected: selectedUser?.id === user.id }]"
+              @click="selectUser(user)"
+            >
+              <el-avatar :size="48" :src="user.avatar">{{ user.username?.charAt(0) }}</el-avatar>
+              <div class="user-info">
+                <div class="user-name">{{ user.username }}</div>
+                <div class="user-detail">
+                  <span v-if="user.department">{{ user.department }}</span>
+                  <span v-if="user.position">{{ user.position }}</span>
+                  <span v-if="user.email">{{ user.email }}</span>
+                </div>
+              </div>
+              <el-button 
+                v-if="selectedUser?.id === user.id" 
+                type="primary" 
+                size="small"
+              >
+                已选择
+              </el-button>
+              <el-button 
+                v-else 
+                type="primary" 
+                size="small"
+                @click.stop="selectUserAndAdd(user)"
+              >
+                添加
+              </el-button>
+            </div>
+          </div>
+          
+          <div v-else-if="searchKeywordForAdd" class="empty-search-result">
+            <el-empty description="未找到相关用户" />
+          </div>
+          
+          <div v-else class="search-placeholder">
+            <el-empty description="请输入关键词搜索用户" :image-size="80" />
+          </div>
+        </div>
+      </div>
+      
       <template #footer>
         <el-button @click="addFriendDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitAddFriend">添加</el-button>
+        <el-button 
+          type="primary" 
+          @click="submitAddFriend" 
+          :disabled="!selectedUser"
+        >
+          确认添加
+        </el-button>
       </template>
     </el-dialog>
 
@@ -134,7 +191,6 @@
           </el-descriptions-item>
         </el-descriptions>
         <div class="detail-actions" style="margin-top: 20px; text-align: right">
-          <el-button type="success" :icon="Phone" @click="callFriend(currentFriend)">通话</el-button>
           <el-button type="primary" :icon="ChatDotRound" @click="chatWithFriend(currentFriend)">聊天</el-button>
         </div>
       </div>
@@ -157,7 +213,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, ChatDotRound, Phone } from '@element-plus/icons-vue'
+import { Plus, ChatDotRound } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import ContactSidebar from './components/ContactSidebar.vue'
@@ -173,8 +229,19 @@ import {
   getFieldValue,
   type ContactItem
 } from './utils/contact'
+import { useContactsStore } from '@/store/modules/contacts/useContactsStore'
+import { useUserStore } from '@/store/modules/user'
+import { userApi } from '@/api/user/user'
+import { contactsApi } from '@/api/contacts/contacts'
 
 const router = useRouter()
+const contactsStore = useContactsStore()
+const userStore = useUserStore()
+
+const getCurrentUserId = (): number => {
+  const userId = userStore.userInfo?.id
+  return userId || 0
+}
 
 // 类型定义
 interface Friend {
@@ -192,52 +259,60 @@ interface FriendRequest { id: number; name: string; avatar?: string; company: st
 interface Group { id: number; name: string; memberCount: number; description: string }
 interface CustomGroup { id: number; name: string }
 interface FriendGroupMap { friendId: number; groupId: number }
+interface SearchResult {
+  id: number
+  username: string
+  avatar?: string
+  email?: string
+  phone?: string
+  department?: string
+  position?: string
+}
 
 // 响应式数据
-const loading = ref(false)
+const loading = computed(() => contactsStore.loading)
 const activeMenu = ref<MenuType>(MenuType.FRIENDS)
 const searchKeyword = ref('')
 const friendDetailVisible = ref(false)
 const currentFriend = ref<Friend | null>(null)
 const addFriendDialogVisible = ref(false)
-const friendFormRef = ref<FormInstance>()
+const searchResults = ref<SearchResult[]>([])
+const selectedUser = ref<SearchResult | null>(null)
+const searchKeywordForAdd = ref('')
+const searchLoading = ref(false)
 
 // 分组数据
-const customGroups = ref<CustomGroup[]>([
-  { id: 1, name: '重点工作组' },
-  { id: 2, name: '专家智库' },
-  { id: 3, name: '跨部门协同' }
-])
-const friendGroupMaps = ref<FriendGroupMap[]>([
-  { friendId: 1, groupId: 1 }, { friendId: 1, groupId: 3 },
-  { friendId: 2, groupId: 3 }, { friendId: 5, groupId: 1 }
-])
+const customGroups = computed(() => contactsStore.groups.map(g => ({ id: Number(g.id), name: g.name })))
+const friendGroupMaps = ref<FriendGroupMap[]>([])
 
 // 好友列表
-const friends = ref<Friend[]>([
-  { id: 1, name: '小陈', company: '市数据局', department: 'AI应用处', relation: '同事', avatar: '', position: 'AI训练师', mobile: '13800138001', email: 'chenj@data.gov' },
-  { id: 2, name: '小程', company: '市数据局', department: '政策法规处', relation: '同事', avatar: '', position: '法规专员', mobile: '13800138002', email: 'chengyy@data.gov' },
-  { id: 3, name: '小芳', company: '数字政府研究院', department: '技术研发部', relation: '合作伙伴', avatar: '', position: '架构师', mobile: '13800138003' },
-  { id: 4, name: '小方', company: '市教育局', department: '基础教育科', relation: '', avatar: '', position: '科长', mobile: '13800138004' },
-  { id: 5, name: '小李', company: '市数据局', department: '市场推广部', relation: '同事', avatar: '', position: '推广主任', mobile: '13800138005' }
-])
+const friends = computed(() => contactsStore.friends.map(f => ({
+  id: Number(f.friendId),  // 使用好友的用户 ID，而不是好友关系表的 ID
+  name: f.friend.username,
+  avatar: f.friend.avatar,
+  company: f.friend.department || '',
+  department: f.friend.department || '',
+  position: f.friend.position || '',
+  mobile: f.friend.phone || '',
+  email: f.friend.email || '',
+  relation: f.relation || '',
+})))
 
-const newFriendRequests = ref<FriendRequest[]>([
-  { id: 101, name: '王晓明', company: '市公安局', message: '想认识一下' },
-  { id: 102, name: '张莉莉', company: '市大数据中心', message: '校友推荐' }
-])
+const newFriendRequests = computed(() => contactsStore.friendRequests.map(r => ({
+  requestId: Number(r.id),        // 申请表的 ID（用于同意/拒绝操作）
+  id: Number(r.fromUserId),       // 发送申请的用户的 ID（用于显示和跳转）
+  name: r.fromUser.username,
+  avatar: r.fromUser.avatar,
+  company: r.fromUser.department || '',
+  message: r.message || '',
+})))
 
-const groups = ref<Group[]>([
-  { id: 201, name: '技术交流群', memberCount: 86, description: '技术分享与讨论' },
-  { id: 202, name: '项目协作组', memberCount: 42, description: '跨部门项目协作' }
-])
-
-// 表单
-const newFriendForm = reactive({ name: '', company: '', department: '', mobile: '', email: '', position: '' })
-const friendFormRules: FormRules = {
-  name: [{ required: true, message: '请输入姓名' }],
-  company: [{ required: true, message: '请输入组织' }]
-}
+const groups = computed(() => contactsStore.chatGroups.map(g => ({
+  id: Number(g.id),
+  name: g.name,
+  memberCount: g.memberCount,
+  description: g.description || '',
+})))
 
 // 分组弹窗状态
 const addGroupDialogVisible = ref(false)
@@ -258,123 +333,261 @@ const currentMenuTitle = computed(() => {
   return titles[activeMenu.value]
 })
 
-const formFields = [
-  { prop: 'name', label: '姓名', placeholder: '请输入姓名' },
-  { prop: 'position', label: '职务', placeholder: '请输入职务' },
-  { prop: 'company', label: '组织', placeholder: '请输入组织' },
-  { prop: 'department', label: '部门', placeholder: '请输入部门' },
-  { prop: 'mobile', label: '手机号', placeholder: '请输入手机号' },
-  { prop: 'email', label: '邮箱', placeholder: '请输入邮箱' }
-]
-// 方法
-const openAddFriendDialog = () => { addFriendDialogVisible.value = true }
-const submitAddFriend = async () => {
-  if (!friendFormRef.value) return
-  await friendFormRef.value.validate()
-  friends.value.push({
-    id: Date.now(),
-    name: newFriendForm.name,
-    company: newFriendForm.company,
-    department: newFriendForm.department || '未填写',
-    mobile: newFriendForm.mobile,
-    email: newFriendForm.email,
-    relation: '好友',
-    position: newFriendForm.position
-  })
-  ElMessage.success('添加成功')
-  addFriendDialogVisible.value = false
-  Object.assign(newFriendForm, { name: '', company: '', department: '', mobile: '', email: '', position: '' })
+const handleSearchUsers = async () => {
+  if (!searchKeywordForAdd.value) {
+    searchResults.value = []
+    return
+  }
+  
+  searchLoading.value = true
+  try {
+    const results = await userApi.searchUsers(searchKeywordForAdd.value)
+    searchResults.value = results
+  } catch (error) {
+    console.error('搜索用户失败:', error)
+    searchResults.value = []
+    ElMessage.error('搜索失败')
+  } finally {
+    searchLoading.value = false
+  }
 }
 
-const deleteFriend = (id: number) => {
-  ElMessageBox.confirm('确定移除该好友？', '提示', { type: 'warning' }).then(() => {
-    friends.value = friends.value.filter(f => f.id !== id)
-    friendGroupMaps.value = friendGroupMaps.value.filter(m => m.friendId !== id)
-    ElMessage.success('已移除')
+const selectUser = (user: SearchResult) => {
+  selectedUser.value = user
+}
+
+const selectUserAndAdd = async (user: SearchResult) => {
+  selectedUser.value = user
+  await submitAddFriend()
+}
+
+const submitAddFriend = async () => {
+  if (!selectedUser.value) {
+    ElMessage.warning('请先选择要添加的用户')
+    return
+  }
+  
+  try {
+    // 发送好友申请，而不是直接添加
+    await contactsApi.sendFriendRequest({
+      fromUserId: Number(getCurrentUserId()),
+      toUserId: Number(selectedUser.value.id),
+    })
+    ElMessage.success('好友申请已发送，等待对方接受')
+    addFriendDialogVisible.value = false
+    selectedUser.value = null
+    searchResults.value = []
+    searchKeywordForAdd.value = ''
+    // 刷新好友申请列表
+    await contactsStore.fetchFriendRequests(getCurrentUserId())
+  } catch (error: any) {
+    console.error('发送好友申请失败:', error)
+    ElMessage.error(error.message || '发送申请失败')
+  }
+}
+
+const openAddFriendDialog = () => {
+  addFriendDialogVisible.value = true
+  searchKeywordForAdd.value = ''
+  searchResults.value = []
+  selectedUser.value = null
+}
+
+const deleteFriend = async (id: number) => {
+  if (!id) {
+    ElMessage.warning('好友信息错误')
+    return
+  }
+  ElMessageBox.confirm('确定移除该好友？删除后聊天记录也将被清除', '提示', { 
+    type: 'warning',
+    confirmButtonText: '确定删除',
+    cancelButtonText: '取消'
+  }).then(async () => {
+    try {
+      await contactsStore.deleteFriend(Number(id), Number(getCurrentUserId()))
+      ElMessage.success('已移除')
+      await contactsStore.fetchFriends(getCurrentUserId())
+    } catch (error: any) {
+      console.error('删除失败:', error)
+      ElMessage.error(error.message || '删除失败')
+    }
   }).catch(() => { })
 }
 
-const callFriend = (friend: Friend) => {
-  if (friend.mobile) ElMessage.success(`正在呼叫 ${friend.name}：${friend.mobile}`)
-  else ElMessage.warning('暂无联系方式')
-}
-
-const acceptFriend = (id: number) => {
-  const req = newFriendRequests.value.find(r => r.id === id)
-  if (req) {
-    friends.value.push({
-      id: Date.now(),
-      name: req.name,
-      company: req.company,
-      department: '待完善',
-      avatar: req.avatar,
-      position: '待完善',
-      relation: '好友'
-    })
-    newFriendRequests.value = newFriendRequests.value.filter(r => r.id !== id)
+const acceptFriend = async (item: any) => {
+  const requestId = item.requestId
+  const userId = getCurrentUserId()
+  
+  if (!requestId || !userId) {
+    ElMessage.warning('申请信息错误')
+    return
+  }
+  
+  try {
+    await contactsStore.acceptFriendRequest(requestId, userId)
     ElMessage.success('已添加为好友')
+    await contactsStore.fetchFriendRequests(userId)
+    await contactsStore.fetchFriends(userId)
+  } catch (error: any) {
+    console.error('接受失败:', error)
+    ElMessage.error(error.response?.data?.message || error.message || '接受失败')
   }
 }
-const rejectFriend = (id: number) => {
-  newFriendRequests.value = newFriendRequests.value.filter(r => r.id !== id)
-  ElMessage.info('已拒绝申请')
+
+const rejectFriend = async (item: any) => {
+  const requestId = item.requestId
+  const userId = getCurrentUserId()
+  
+  if (!requestId || !userId) {
+    ElMessage.warning('申请信息错误')
+    return
+  }
+  
+  try {
+    await contactsStore.rejectFriendRequest(requestId, userId)
+    ElMessage.info('已拒绝申请')
+    await contactsStore.fetchFriendRequests(userId)
+  } catch (error: any) {
+    console.error('拒绝失败:', error)
+    ElMessage.error(error.response?.data?.message || error.message || '拒绝失败')
+  }
 }
+
 const joinGroup = (group: Group) => ElMessage.info(`进入群聊：${group.name} (演示功能)`)
 const openFriendDetail = (friend: Friend) => {
   currentFriend.value = friend
   friendDetailVisible.value = true
 }
 const chatWithFriend = (friend: Friend) => {
-  router.push({ path: '/message', query: { userId: friend.id.toString() } })
+  if (!friend.id) {
+    ElMessage.warning('好友信息不完整')
+    return
+  }
+  try {
+    router.push({ path: '/message', query: { friendId: String(friend.id) } })
+  } catch (error) {
+    console.error('跳转聊天页面失败:', error)
+    ElMessage.error('跳转失败，请重试')
+  }
 }
 
 // 分组方法
 const openAddGroupDialog = () => { addGroupDialogVisible.value = true }
-const handleAddGroup = (name: string) => {
-  customGroups.value.push({ id: Date.now(), name })
-  ElMessage.success('分组添加成功')
+const handleAddGroup = async (name: string) => {
+  try {
+    if (!name || !name.trim()) {
+      ElMessage.warning('请输入分组名称')
+      return
+    }
+    await contactsStore.createGroup({
+      userId: Number(getCurrentUserId()),
+      name: name.trim(),
+    })
+    ElMessage.success('分组添加成功')
+    addGroupDialogVisible.value = false
+  } catch (error: any) {
+    console.error('添加分组失败:', error)
+    ElMessage.error(error.message || '添加分组失败')
+  }
 }
+
 const renameGroup = (group: CustomGroup) => {
+  if (!group || !group.id) {
+    ElMessage.warning('分组信息错误')
+    return
+  }
   currentOperateGroup.value = group
   renameGroupDialogVisible.value = true
 }
-const handleRenameGroup = (id: number, newName: string) => {
-  const group = customGroups.value.find(g => g.id === id)
-  if (group) group.name = newName
-  ElMessage.success('重命名成功')
+const handleRenameGroup = async (id: number, newName: string) => {
+  try {
+    if (!id || !newName || !newName.trim()) {
+      ElMessage.warning('分组名称不能为空')
+      return
+    }
+    await contactsStore.updateGroup(Number(id), { name: newName.trim() })
+    ElMessage.success('重命名成功')
+    renameGroupDialogVisible.value = false
+  } catch (error: any) {
+    console.error('重命名失败:', error)
+    ElMessage.error(error.message || '重命名失败')
+  }
 }
-const deleteGroup = (groupId: number) => {
-  ElMessageBox.confirm('确定删除分组？', '提示', { type: 'warning' }).then(() => {
-    customGroups.value = customGroups.value.filter(g => g.id !== groupId)
-    friendGroupMaps.value = friendGroupMaps.value.filter(m => m.groupId !== groupId)
-    ElMessage.success('删除成功')
+
+const deleteGroup = async (groupId: number) => {
+  if (!groupId) {
+    ElMessage.warning('分组信息错误')
+    return
+  }
+  ElMessageBox.confirm('确定删除分组？', '提示', { type: 'warning' }).then(async () => {
+    try {
+      await contactsStore.deleteGroup(Number(groupId), Number(getCurrentUserId()))
+      ElMessage.success('删除成功')
+    } catch (error: any) {
+      console.error('删除失败:', error)
+      ElMessage.error(error.message || '删除失败')
+    }
   }).catch(() => { })
 }
+
 const openAddToGroupDialog = (friend: Friend) => {
   addToGroupFriend.value = friend
   addToGroupDialogVisible.value = true
 }
-const handleAddToGroup = (friendId: number, groupIds: number[]) => {
-  friendGroupMaps.value = friendGroupMaps.value.filter(m => m.friendId !== friendId)
-  groupIds.forEach(gid => { friendGroupMaps.value.push({ friendId, groupId: gid }) })
-  ElMessage.success('分组设置成功')
+const handleAddToGroup = async (friendId: number, groupIds: number[]) => {
+  try {
+    if (!friendId || groupIds.length === 0) {
+      ElMessage.warning('请选择分组')
+      return
+    }
+    for (const groupId of groupIds) {
+      if (groupId) {
+        await contactsStore.addFriendToGroup(Number(groupId), Number(friendId))
+      }
+    }
+    ElMessage.success('分组设置成功')
+  } catch (error: any) {
+    console.error('设置分组失败:', error)
+    ElMessage.error(error.message || '设置分组失败')
+  }
 }
+
 const openAddFriendToGroupDialog = (group: CustomGroup) => {
+  if (!group || !group.id) {
+    ElMessage.warning('分组信息不完整')
+    return
+  }
   currentOperateGroup.value = group
   addFriendToGroupDialogVisible.value = true
 }
-const handleAddFriendToGroup = (friendId: number, groupId: number) => {
-  if (friendGroupMaps.value.some(m => m.friendId === friendId && m.groupId === groupId)) {
-    ElMessage.warning('该联系人已在分组中')
-    return
+const handleAddFriendToGroup = async (friendId: number, groupId: number) => {
+  try {
+    if (!friendId || !groupId) {
+      ElMessage.warning('请选择联系人和分组')
+      return
+    }
+    await contactsStore.addFriendToGroup(Number(groupId), Number(friendId))
+    ElMessage.success('添加成功')
+  } catch (error: any) {
+    console.error('添加失败:', error)
+    ElMessage.error(error.message || '添加失败')
   }
-  friendGroupMaps.value.push({ friendId, groupId })
-  ElMessage.success('添加成功')
 }
-const removeFriendFromGroup = (groupId: number, friendId: number) => {
-  friendGroupMaps.value = friendGroupMaps.value.filter(m => !(m.groupId === groupId && m.friendId === friendId))
-  ElMessage.success('已移出分组')
+
+const removeFriendFromGroup = async (groupId: number, friendId: number) => {
+  try {
+    if (!groupId || !friendId) {
+      ElMessage.warning('参数错误')
+      return
+    }
+    await contactsStore.removeFriendFromGroup(Number(groupId), Number(friendId))
+    ElMessage.success('移出成功')
+  } catch (error: any) {
+    console.error('移出分组失败:', error)
+    ElMessage.error(error.message || '移出失败')
+  }
 }
+
 const getFriendGroups = (friendId: number) => {
   return customGroups.value.filter(group => friendGroupMaps.value.some(m => m.friendId === friendId && m.groupId === group.id))
 }
@@ -383,7 +596,15 @@ const getFriendsInGroup = (groupId: number) => {
   return friends.value.filter(f => ids.includes(f.id))
 }
 
-onMounted(() => { loading.value = false })
+onMounted(async () => {
+  const userId = getCurrentUserId()
+  await Promise.all([
+    contactsStore.fetchFriends(userId),
+    contactsStore.fetchFriendRequests(userId),
+    contactsStore.fetchGroups(userId),
+    contactsStore.fetchChatGroups(userId),
+  ])
+})
 </script>
 
 <style scoped lang="scss">
@@ -577,5 +798,154 @@ onMounted(() => { loading.value = false })
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px 0;
+}
+
+.add-friend-content {
+  .search-box {
+    margin-bottom: 16px;
+  }
+
+  .search-results-container {
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: 4px;
+    padding: 16px;
+
+    .search-results {
+      .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+
+        &:hover {
+          background-color: var(--gray-50);
+          border-color: var(--gray-200);
+        }
+
+        &.selected {
+          background-color: var(--blue-50);
+          border-color: var(--blue-200);
+        }
+
+        .el-avatar {
+          flex-shrink: 0;
+        }
+
+        .user-info {
+          flex: 1;
+          min-width: 0;
+
+          .user-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+            font-size: 14px;
+          }
+
+          .user-detail {
+            font-size: 12px;
+            color: var(--gray-500);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+
+            span {
+              &:not(:last-child)::after {
+                content: '·';
+                margin-left: 8px;
+                color: var(--gray-300);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .empty-search-result,
+    .search-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+  }
+}
+
+.search-results {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  margin-bottom: 16px;
+
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--gray-50);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .user-info {
+      flex: 1;
+
+      .user-name {
+        font-weight: 500;
+        color: var(--gray-800);
+        margin-bottom: 2px;
+      }
+
+      .user-detail {
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+    }
+  }
+}
+
+.selected-user {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 16px;
+
+  .selected-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-details {
+      flex: 1;
+
+      .user-name {
+        font-weight: 500;
+        color: var(--gray-800);
+        margin-bottom: 2px;
+      }
+
+      .user-detail {
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+    }
+  }
 }
 </style>

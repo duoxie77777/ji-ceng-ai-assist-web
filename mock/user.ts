@@ -22,8 +22,13 @@ export default [
                 return {
                     code: 0,
                     data: {
-                        token: createToken(username),
-                        expires: Date.now() + 24 * 60 * 60 * 1000, // 24小时后过期
+                        accessToken: createToken(username),
+                        refreshToken: `refresh_${createToken(username)}`,
+                        user: {
+                            id: user.id,
+                            username: user.username,
+                            avatar: user.avatar,
+                        },
                     },
                     message: '登录成功',
                 }

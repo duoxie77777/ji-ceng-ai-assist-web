@@ -26,14 +26,12 @@
         <div class="card-actions">
           <template v-if="type === ListType.FRIENDS">
             <el-button type="primary" link size="small" @click.stop="emit('chat', item)">聊天</el-button>
-            <el-button v-if="item.mobile" type="success" link size="small"
-              @click.stop="emit('call', item)">通话</el-button>
             <el-button type="danger" link size="small" @click.stop="emit('delete', item.id)">移除</el-button>
             <el-button type="warning" link size="small" @click.stop="emit('addToGroup', item)">分组</el-button>
           </template>
           <template v-else-if="type === ListType.REQUESTS">
-            <el-button type="primary" size="small" @click.stop="emit('accept', item.id)">同意</el-button>
-            <el-button size="small" @click.stop="emit('reject', item.id)">拒绝</el-button>
+            <el-button type="primary" size="small" @click.stop="emit('accept', item)">同意</el-button>
+            <el-button size="small" @click.stop="emit('reject', item)">拒绝</el-button>
           </template>
           <template v-else-if="type === ListType.GROUPS">
             <el-button type="primary" link size="small" @click.stop="emit('joinGroup', item)">进入群聊</el-button>
@@ -60,7 +58,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits([
-  'detail', 'delete', 'chat', 'call', 'addToGroup',
+  'detail', 'delete', 'chat', 'addToGroup',
   'accept', 'reject', 'joinGroup'
 ])
 

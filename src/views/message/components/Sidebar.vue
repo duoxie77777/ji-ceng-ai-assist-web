@@ -34,11 +34,14 @@
     <div v-else class="conversations-list">
       <div v-for="conversation in chatStore.conversations" :key="conversation.id"
         :class="['conversation-item', { active: conversation.id === chatStore.activeConvId }]"
-        @click="chatStore.switchConversation(conversation.id)">
-        <img :src="conversation.participant.avatar" class="avatar" />
+        @click="chatStore.switchConversation(conversation.id)"
+        @contextmenu.prevent="showDeleteMenu(conversation.id, $event)">
+        <el-avatar :size="48" :src="conversation.participant.avatar || defaultAvatar" class="avatar">
+          {{ getAvatarText(conversation.participant.name) }}
+        </el-avatar>
         <div class="conversation-info">
-          <div class="name">{{ conversation.participant.name }}</div>
-          <div class="last-message">{{ conversation.lastMessage }}</div>
+          <div class="name">{{ conversation.participant.name || '未知用户' }}</div>
+          <div class="last-message">{{ conversation.lastMessage || '暂无消息' }}</div>
         </div>
         <div class="conversation-meta">
           <div class="time">{{ formatTime(conversation.lastMessageTime, 'sidebar') }}</div>
@@ -47,17 +50,44 @@
           </div>
         </div>
       </div>
+      <div v-if="chatStore.conversations.length === 0" class="empty-state">
+        <el-empty description="暂无会话" :image-size="80" />
+      </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div v-if="contextMenuVisible" class="context-menu" :style="{ top: contextMenuY + 'px', left: contextMenuX + 'px' }"
+      @click.stop="hideContextMenu">
+      <div class="context-menu-item" @click="handleDelete">
+        <el-icon><Delete /></el-icon>
+        <span>删除会话</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import { Delete } from '@element-plus/icons-vue'
 import { useChatStore } from '@/views/message/utils/chatStrore'
 import { SearchResultType } from '@/views/message/utils/type'
 import { UI_TEXT, formatTime } from '@/views/message/utils/chat'
 
 const chatStore = useChatStore()
+
+const defaultAvatar = 'https://cube.elemecdn.com/0/88/03b01d2d5f2b9e2e7d5f8e2e7d5f8e2e.png'
+
+// 右键菜单状态
+const contextMenuVisible = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
+const currentDeleteId = ref<string | number | null>(null)
+
+const getAvatarText = (name: string) => {
+  if (!name) return ''
+  const match = name.match(/[A-Za-z0-9\u4e00-\u9fa5]/)
+  return match ? match[0].toUpperCase() : ''
+}
 
 const searchKeyword = computed({
   get: () => chatStore.searchKeyword,
@@ -73,6 +103,64 @@ const handleSearch = () => {
 const handleResultClick = (result: any) => {
   chatStore.selectSearchResult(result)
 }
+
+// 显示右键菜单
+const showDeleteMenu = (conversationId: string | number, event: MouseEvent) => {
+  console.log('=== [右键菜单调试] ===')
+  console.log('conversationId:', conversationId)
+  console.log('conversationId 类型:', typeof conversationId)
+  console.log('=====================')
+  
+  currentDeleteId.value = conversationId
+  contextMenuX.value = event.clientX
+  contextMenuY.value = event.clientY
+  contextMenuVisible.value = true
+}
+
+// 隐藏右键菜单
+const hideContextMenu = () => {
+  contextMenuVisible.value = false
+  currentDeleteId.value = null
+}
+
+// 执行删除
+const handleDelete = async () => {
+  if (!currentDeleteId.value) return
+  
+  const { ElMessageBox, ElMessage } = await import('element-plus')
+  ElMessageBox.confirm('确定要删除这个会话吗？', '提示', {
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await chatStore.deleteConversation(currentDeleteId.value)
+      ElMessage.success('删除成功')
+    } catch (error: any) {
+      ElMessage.error(error.message || '删除失败')
+    } finally {
+      hideContextMenu()
+    }
+  }).catch(() => {
+    hideContextMenu()
+  })
+}
+
+// 点击其他地方关闭菜单
+const closeMenuOnBodyClick = () => {
+  if (contextMenuVisible.value) {
+    hideContextMenu()
+  }
+}
+
+// 监听全局点击事件
+import { onMounted, onUnmounted } from 'vue'
+onMounted(() => {
+  document.addEventListener('click', closeMenuOnBodyClick)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', closeMenuOnBodyClick)
+})
 </script>
 
 <style scoped lang="scss">
@@ -133,6 +221,102 @@ const handleResultClick = (result: any) => {
   color: var(--gray-400);
   text-align: center;
   font-size: 14px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.conversations-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--gray-50);
+  }
+
+  &.active {
+    background-color: var(--blue-50);
+  }
+
+  .avatar {
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  .conversation-info {
+    flex: 1;
+    min-width: 0;
+
+    .name {
+      font-weight: 500;
+      color: var(--gray-800);
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .last-message {
+      font-size: 13px;
+      color: var(--gray-500);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .conversation-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+
+    .time {
+      font-size: 12px;
+      color: var(--gray-400);
+      white-space: nowrap;
+    }
+
+    .unread-badge {
+      background-color: var(--red-500);
+      color: white;
+      font-size: 11px;
+      padding: 1px 5px;
+      border-radius: 10px;
+      min-width: 16px;
+      text-align: center;
+    }
+
+    .delete-btn {
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+      color: var(--gray-400);
+      padding: 2px;
+      min-width: auto;
+      width: auto;
+      height: auto;
+      
+      &:hover {
+        color: var(--red-500);
+      }
+    }
+  }
+
+  .conversation-item:hover .delete-btn {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .result-item {
@@ -237,5 +421,36 @@ const handleResultClick = (result: any) => {
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 10px;
+}
+
+// 右键菜单样式
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
+  z-index: 9999;
+  min-width: 120px;
+
+  .context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--gray-700);
+
+    &:hover {
+      background-color: var(--gray-100);
+      color: var(--red-500);
+    }
+
+    .el-icon {
+      font-size: 14px;
+    }
+  }
 }
 </style>

@@ -2,8 +2,24 @@ import type { RouteRecordRaw } from 'vue-router'
 import type { MenuItem } from '@/api/menu/menu'
 import router from '@/router'
 
-// 视图组件映射
-const viewModules = import.meta.glob('@/views/**/*.vue')
+// 预定义关键页面的动态加载函数
+const componentLoaders: Record<string, () => Promise<any>> = {
+  '/home/index': () => import('@/views/home/index.vue'),
+  '/task/index': () => import('@/views/task/index.vue'),
+  '/document/index': () => import('@/views/document/index.vue'),
+  '/document/components/documentContent/Word/index': () => import('@/views/document/components/documentContent/Word/index.vue'),
+  '/document/components/documentContent/Excel/index': () => import('@/views/document/components/documentContent/Excel/index.vue'),
+  '/document/components/documentContent/PPT/index': () => import('@/views/document/components/documentContent/PPT/index.vue'),
+  '/document/components/documentContent/CollectionForm/index': () => import('@/views/document/components/documentContent/CollectionForm/index.vue'),
+  '/document/components/documentContent/FlowChart/index': () => import('@/views/document/components/documentContent/FlowChart/index.vue'),
+  '/document/components/documentContent/MindMap/index': () => import('@/views/document/components/documentContent/MindMap/index.vue'),
+  '/meeting/index': () => import('@/views/meeting/index.vue'),
+  '/meeting/room/:roomId': () => import('@/views/meeting/room/index.vue'),
+  '/contacts/index': () => import('@/views/contacts/index.vue'),
+  '/message/index': () => import('@/views/message/index.vue'),
+  '/approval/index': () => import('@/views/approval/index.vue'),
+  '/profile/index': () => import('@/views/profile/index.vue'),
+}
 
 /**
  * 递归解析菜单数据，转换为路由配置（支持嵌套）
@@ -11,23 +27,23 @@ const viewModules = import.meta.glob('@/views/**/*.vue')
  * @returns 对应的路由配置数组
  */
 function recursiveMenuToRoutes(menuList: MenuItem[]): RouteRecordRaw[] {
-  // 遍历菜单列表，转换为路由配置
   return menuList.map(menu => {
-    // 构建当前菜单对应的路由配置（一级或子级）
+    // 移除 path 的前导斜杠，使其成为相对路径
+    const routePath = menu.path.startsWith('/') ? menu.path.slice(1) : menu.path
+
     const route: RouteRecordRaw = {
-      path: menu.path,
+      path: routePath,
       name: menu.name,
       component: loadViewComponent(menu.component),
       meta: {
-        title: menu.meta.title,
-        icon: menu.meta.icon,
-        keepAlive: menu.meta.keepAlive ?? false
+        title: menu.meta?.title || menu.name,
+        icon: menu.meta?.icon || menu.icon,
+        keepAlive: menu.meta?.keepAlive ?? false
       }
     }
 
-    // 关键：如果当前菜单有 children，递归处理子菜单
     if (menu.children && menu.children.length > 0) {
-      route.children = recursiveMenuToRoutes(menu.children) // 递归调用，解析子菜单
+      route.children = recursiveMenuToRoutes(menu.children)
     }
 
     return route
@@ -40,14 +56,13 @@ function recursiveMenuToRoutes(menuList: MenuItem[]): RouteRecordRaw[] {
  * @returns 路由配置数组
  */
 export function transformMenuToRoutes(menuList: MenuItem[]): RouteRecordRaw[] {
-  // 调用递归函数，生成包含嵌套子路由的一级路由配置
   const childRoutes = recursiveMenuToRoutes(menuList)
 
-  // 返回包含 BasicLayout 的路由配置
   return [
     {
       path: '/',
       component: () => import('@/layouts/BasicLayout.vue'),
+      redirect: childRoutes[0]?.path || 'home',
       children: childRoutes
     }
   ]
@@ -59,26 +74,30 @@ export function transformMenuToRoutes(menuList: MenuItem[]): RouteRecordRaw[] {
  * @returns 异步组件加载函数
  */
 function loadViewComponent(componentPath: string) {
-  // 标准化路径
-  let path = componentPath
-  if (!path.startsWith('/')) {
-    path = '/' + path
-  }
-  if (!path.endsWith('.vue')) {
-    path = path + '.vue'
+  // 如果 componentPath 为空，返回 404 页面
+  if (!componentPath) {
+    console.warn('Component path is empty, returning 404')
+    return () => import('@/views/error/404.vue')
   }
 
-  const fullPath = `/src/views${path}`
+  console.log('Loading component:', componentPath)
 
-  // 返回组件加载函数
+  // 使用预定义的加载函数
+  let loader = componentLoaders[componentPath]
+
+  if (loader) {
+    return loader
+  }
+
+  // 如果没有预定义，尝试直接加载
+  console.warn('Component not in preload list, trying direct import:', componentPath)
   return () => {
-    const component = viewModules[fullPath]
-    if (!component) {
-      console.error(`组件路径不存在: ${fullPath}`)
-      // 返回 404 页面
+    try {
+      return import(/* @vite-ignore */ `@/views${componentPath}.vue`)
+    } catch (error) {
+      console.error('Failed to load component:', error)
       return import('@/views/error/404.vue')
     }
-    return component()
   }
 }
 
@@ -91,10 +110,11 @@ export function addDynamicRoutes(routes: RouteRecordRaw[]): void {
     router.addRoute(route)
   })
 
-  // 添加 404 兜底路由（必须在所有路由之后添加）
+  // 添加 404 通配符路由（放在最后）
   router.addRoute({
     path: '/:pathMatch(.*)*',
-    redirect: '/error/404'
+    name: 'NotFound',
+    component: () => import('@/views/error/404.vue'),
   })
 }
 
